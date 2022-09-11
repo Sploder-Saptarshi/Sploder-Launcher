@@ -1,0 +1,39 @@
+{
+  "name": "Sploder",
+  "version": "1.0.0",
+  "author": "Saptarshi",
+  "description": "Sploder Launcher",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "yarn compile && electron-builder",
+    "dist-32bit": "yarn compile && electron-builder --ia32",
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.16"
+  },
+  "devDependencies": {
+    "electron": "^8.2.0",
+    "electron-builder": "^22.4.1",
+    "electron-devtools-installer": "^3.2.0",
+    "electron-webpack": "^2.8.2",
+    "webpack": "~4.42.1"
+  },
+  "build": {
+    "appId": "com.sploder",
+    "productName": "Sploder",
+    "nsis": {
+      "allowElevation": "true",
+      "oneClick": "false",
+      "perMachine": "true",
+      "allowToChangeInstallationDirectory": "true",
+      "deleteAppDataOnUninstall": "true",
+      "runAfterFinish": "true"
+    },
+    "extraResources": [
+      "./plugins/**"
+    ]
+  }
+}
