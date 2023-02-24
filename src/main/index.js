@@ -1,6 +1,7 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const DiscordRPC = require('discord-rpc');
 const { Menu } = require('electron')
 const isMac = process.platform === 'darwin'
 const template = [
@@ -80,9 +81,6 @@ switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
     break;
-   case 'linux':
-    pluginName = 'libpepflashplayer.so'
-    break;
   default:
     pluginName = 'x64/pepflashplayer.dll';
     break;
@@ -90,10 +88,9 @@ switch (process.platform) {
 
 app.commandLine.appendSwitch(
   "ppapi-flash-path",
-  path.join(__dirname + pluginName)
+  path.join(__dirname + "/../plugins/", pluginName)
 );
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
-
 
 function createWindow() {
 	  Menu.setApplicationMenu(menu)
@@ -101,13 +98,17 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
+      devTools: true,
       plugins: true,
     },
-  });
-
+    
+  }
+  
+  );
 
   win.maximize();
-win.loadURL("https://sploder.us.to/play.php");}
+  win.setAutoHideMenuBar(true)
+  win.loadURL("https://sploder.us.to/play.php?v=3&os=win");}
 
 app.whenReady().then(() => {
   createWindow();
@@ -120,6 +121,7 @@ app.whenReady().then(() => {
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
 });
+
 
 
 const clientId = '915116210570539058';
@@ -152,4 +154,3 @@ rpc.on('ready', () => {
 });
 
 rpc.login({ clientId }).catch(console.error);
-
