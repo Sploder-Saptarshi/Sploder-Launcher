@@ -1,6 +1,6 @@
 {
   "name": "Sploder",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "author": "Saptarshi",
   "description": "Sploder Launcher",
   "license": "MIT",
@@ -12,10 +12,11 @@
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {
+    "discord-rpc": "^4.0.1",
     "source-map-support": "^0.5.16"
   },
   "devDependencies": {
-    "electron": "^8.2.0",
+    "electron": "10.0.0",
     "electron-builder": "^22.4.1",
     "electron-devtools-installer": "^3.2.0",
     "electron-webpack": "^2.8.2",
