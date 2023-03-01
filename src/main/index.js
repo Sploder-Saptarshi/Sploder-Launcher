@@ -98,6 +98,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
+      allowRunningInsecureContent: true,
       devTools: true,
       plugins: true,
     },
