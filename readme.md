@@ -1,7 +1,7 @@
 <h1>Sploder Launcher</h1>
 A project that aims to revive <a href="https://sploder.com">sploder</a>.
 <h1>How to use:</h1>
-- Download the <a href="https://github.com/Sploder-Saptarshi/Sploder-Launcher/releases">latest release</a> from here.<br>
+- Download the <a href="https://github.com/Sploder-Saptarshi/Sploder-Launcher/releases/latest">latest release</a> from here.<br>
 - Run the installer.<br>
 - Done.<br>
 <h1>How to build:</h1>
