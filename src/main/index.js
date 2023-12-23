@@ -1,82 +1,9 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
-const fs = require("fs");
 const DiscordRPC = require('discord-rpc');
-const { Menu } = require('electron')
-const isMac = process.platform === 'darwin'
-const template = [
-  // { role: 'appMenu' }
-  ...(isMac ? [{
-    label: app.name,
-    submenu: [
-      { role: 'about' },
-      { type: 'separator' },
-      { role: 'services' },
-      { type: 'separator' },
-      { role: 'hide' },
-      { role: 'hideOthers' },
-      { role: 'unhide' },
-      { type: 'separator' },
-      { role: 'quit' }
-    ]
-  }] : []),
-  // { role: 'fileMenu' }
-  {
-    label: 'File',
-    submenu: [
-      isMac ? { role: 'close' } : { role: 'quit' }
-    ]
-  },
-  // { role: 'editMenu' }
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      ...(isMac ? [
-        { role: 'pasteAndMatchStyle' },
-        { role: 'delete' },
-        { role: 'selectAll' },
-        { type: 'separator' },
-        {
-          label: 'Speech',
-          submenu: [
-            { role: 'startSpeaking' },
-            { role: 'stopSpeaking' }
-          ]
-        }
-      ] : [
-        { role: 'delete' },
-        { type: 'separator' },
-        { role: 'selectAll' }
-      ])
-    ]
-  },
-  // { role: 'viewMenu' }
-  {
-    label: 'View',
-    submenu: [
-      { role: 'reload' },
-      { role: 'forceReload' },
-      { role: 'toggleDevTools' },
-      { type: 'separator' },
-      { role: 'resetZoom' },
-      { role: 'zoomIn' },
-      { role: 'zoomOut' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' }
-    ]
-  },
-]
-const menu = Menu.buildFromTemplate(template)
-
 let win;
 let pluginName;
-
+const isDev = false; // Change to false if you want to disable development mode and package the application.
 switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
@@ -86,30 +13,66 @@ switch (process.platform) {
     break;
 }
 
-app.commandLine.appendSwitch(
-  "ppapi-flash-path",
-  path.join(__dirname + "/../plugins/", pluginName)
-);
+if(isDev){
+  flashpath = path.join(__dirname + "../../../plugins/", pluginName)
+} else {
+  flashpath = path.join(__dirname + "/../plugins/", pluginName)
+}
+app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
-
+// I do not know why this exists or what this does.
+app.commandLine.appendSwitch('disable-site-isolation-trials')
 function createWindow() {
-	  Menu.setApplicationMenu(menu)
   win = new BrowserWindow({
+    // Disable the titlebar for Windows XP theme.
+    frame:false,
+    minWidth:640,
+    minHeight: 320,
     webPreferences: {
-      nodeIntegration: false,
+      // Who cares about security?
+      // I'll surely have to address this sometime soon though.
+      webSecurity: false,
+      enableRemoteModule: true,
+      nodeIntegration: true,
       contextIsolation: false,
       allowRunningInsecureContent: true,
       devTools: true,
+      // Must be enabled to allow flash to run.
       plugins: true,
+  
     },
     
   }
-  
   );
 
   win.maximize();
-  win.setAutoHideMenuBar(true)
-  win.loadURL("https://sploder.us.to/play.php?v=3&os=win");}
+  if(isDev){
+    win.openDevTools();
+  }
+  // Load the custom Windows XP titlebar.
+  if(isDev){
+    startpath = "/../../src/local/start.html"
+  } else {
+    startpath = "/../../resources/src/local/start.html"
+  }
+  win.loadURL("file:///" +  app.getAppPath().replace(/\\/g, '/') +startpath);
+  win.webContents.on('new-window', (event, url) => {
+    event.preventDefault();
+    shell.openExternal(url);
+  });
+  // Discord is a nuisance and does not allow it's website to be embedded in an iframe... Workaround below.
+  win.webContents.session.webRequest.onHeadersReceived({ urls: [ "https://discord.com/*" ] },
+  (d, c)=>{
+    if(d.responseHeaders['X-Frame-Options']){
+      delete d.responseHeaders['X-Frame-Options'];
+    } else if(d.responseHeaders['x-frame-options']) {
+      delete d.responseHeaders['x-frame-options'];
+    }
+
+    c({cancel: false, responseHeaders: d.responseHeaders});
+  }
+);
+}
 
 app.whenReady().then(() => {
   createWindow();
@@ -124,7 +87,7 @@ app.on("window-all-closed", function () {
 });
 
 
-
+// Replace with your own Discord RPC client ID.
 const clientId = '915116210570539058';
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
@@ -133,10 +96,7 @@ async function setActivity() {
   if (!rpc || !win) {
     return;
   }
-  const boops = await win.webContents.executeJavaScript('window.boops');
-
-  // You'll need to have snek_large and snek_small assets uploaded to
-  // https://discord.com/developers/applications/<application_id>/rich-presence/assets
+  const boops = await win.webContents.executeJavaScript('rpcinfo');
   rpc.setActivity({
     details: `${boops}`,
     startTimestamp,
@@ -147,8 +107,6 @@ async function setActivity() {
 
 rpc.on('ready', () => {
   setActivity();
-
-  // activity can only be set every 15 seconds
   setInterval(() => {
     setActivity();
   }, 15e3);

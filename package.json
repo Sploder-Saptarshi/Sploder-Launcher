@@ -1,6 +1,6 @@
 {
   "name": "Sploder",
-  "version": "3.0.1",
+  "version": "4.0.3",
   "author": "Saptarshi",
   "description": "Sploder Launcher",
   "license": "MIT",
@@ -34,7 +34,8 @@
       "runAfterFinish": "true"
     },
     "extraResources": [
-      "./plugins/**"
+      "./plugins/**",
+      "./src/local/**"
     ]
   }
 }

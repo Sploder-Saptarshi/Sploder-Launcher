@@ -5,6 +5,8 @@ A project that aims to revive <a href="https://sploder.com">sploder</a>.
 - Run the installer.<br>
 - Done.<br>
 <h1>How to build:</h1>
+- Precaution: DO NOT look at the source code... You will die of brain damage.<br>
+- Use node 14.10.0.<br>
 - Install yarn.<br>
 - Install all the required packages by running <code>yarn</code>.<br>
 - Run <code>yarn dist</code>.<br>

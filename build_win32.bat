@@ -1,1 +1,2 @@
-yarn dist
+call yarn dist-32bit
+pause
