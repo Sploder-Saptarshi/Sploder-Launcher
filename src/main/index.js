@@ -44,7 +44,7 @@ function createWindow() {
     
   }
   );
-
+  win.setMenu(null);
   win.maximize();
   if(isDev){
     win.openDevTools();
@@ -112,4 +112,4 @@ rpc.on('ready', () => {
   }, 15e3);
 });
 
-rpc.login({ clientId }).catch(console.error);
+rpc.login({ clientId }).catch();
