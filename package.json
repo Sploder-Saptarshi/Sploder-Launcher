@@ -32,7 +32,7 @@
       "allowToChangeInstallationDirectory": "true",
       "deleteAppDataOnUninstall": "true",
       "runAfterFinish": "true",
-      "artifactName": "Sploder Setup ${version} ${arch}.${ext}"
+      "artifactName": "Sploder-Setup-${version}-${arch}.${ext}"
     },
     "extraResources": [
       "./plugins/**",
