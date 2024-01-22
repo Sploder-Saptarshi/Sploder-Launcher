@@ -14,10 +14,11 @@ switch (process.platform) {
 }
 
 if(isDev){
-  flashpath = path.join(__dirname + "../../../plugins/", pluginName)
+  flashpath = path.join("../../../plugins/", pluginName)
 } else {
   flashpath = path.join(__dirname + "/../plugins/", pluginName)
 }
+
 app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
 // I do not know why this exists or what this does.
@@ -31,15 +32,11 @@ function createWindow() {
     webPreferences: {
       // Who cares about security?
       // I'll surely have to address this sometime soon though.
-      webSecurity: false,
       enableRemoteModule: true,
-      nodeIntegration: true,
-      contextIsolation: false,
-      allowRunningInsecureContent: true,
+      nodeIntegration: true,  
       devTools: true,
       // Must be enabled to allow flash to run.
       plugins: true,
-  
     },
     
   }
