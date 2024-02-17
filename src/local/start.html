@@ -51,7 +51,7 @@ setInterval(discordrpc, 15000);
     if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/"){
     page = document.getElementById("content-frame").contentWindow.location.href;
     } else if(page == undefined) {
-      page = "https://sploder.us.to/play.php?v=400&platform=windows"
+      page = "https://sploder.us.to/play.php?v=406&platform=windows"
     }
     if(page.includes("offline.html")){
       page = "test";
@@ -100,7 +100,7 @@ setInterval(discordrpc, 15000);
         
     }
     iframe {
-        width: calc(100% - 7.5px);
+        width: calc(100% - 6px);
         height: calc(100% - 28px);
         border: none;
         
@@ -137,7 +137,7 @@ setInterval(discordrpc, 15000);
 </style>
 <body>
   
-    <div class="window" style="width: 100%; height: calc(100% - 4px)">
+    <div class="window" style="width: 100%; height: calc(100% - 3px)">
         <div class="title-bar">
           <img class="title-bar-icon" src="images/icon.png">
           <div class="title-bar-text">Sploder</div>
@@ -149,7 +149,7 @@ setInterval(discordrpc, 15000);
           </div>
         </div>
         <div class="window-body" style="width: 100%; height: 100%; margin-left: 3px; margin-top:0px;">
-            <iframe id="content-frame" onload="online();" src="https://sploder.us.to/play.php?v=405&platform=windows">
+            <iframe id="content-frame" onload="online();" src="https://sploder.us.to/play.php?v=406&platform=windows">
             </iframe>
            
         </div>
