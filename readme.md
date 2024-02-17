@@ -1,5 +1,6 @@
 <h1>Sploder Launcher</h1>
-A project that aims to revive <a href="https://sploder.com">sploder</a>.
+A project that aims to revive <a href="https://sploder.com">sploder</a>.<br>
+Join the <a href="https://discord.gg/cHGz362sdC">Discord server</a>!
 <h1>How to use:</h1>
 - Download the <a href="https://github.com/Sploder-Saptarshi/Sploder-Launcher/releases/latest">latest release</a> from here.<br>
 - Run the installer.<br>
