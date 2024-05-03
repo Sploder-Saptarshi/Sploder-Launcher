@@ -6,7 +6,6 @@ Join the <a href="https://discord.gg/cHGz362sdC">Discord server</a>!
 - Run the installer.<br>
 - Done.<br>
 <h1>How to build:</h1>
-- Precaution: DO NOT look at the source code... You will die of brain damage.<br>
 - Use node 14.10.0.<br>
 - Install yarn.<br>
 - Install all the required packages by running <code>yarn</code>.<br>
