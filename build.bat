@@ -1,5 +1,5 @@
 @echo off
-call yarn dist-32bit
+set NODE_OPTIONS=--openssl-legacy-provider
 call yarn dist
-echo Build complete.
-pause
+echo Build complete. Press any key to close.
+pause > nul

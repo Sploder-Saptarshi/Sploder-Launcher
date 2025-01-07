@@ -26,9 +26,11 @@ app.commandLine.appendSwitch('disable-site-isolation-trials')
 function createWindow() {
   win = new BrowserWindow({
     // Disable the titlebar for Windows XP theme.
+    backgroundColor: "#32103C",
     frame:false,
     minWidth:640,
     minHeight: 320,
+    show: false, // Initially hide the new window
     webPreferences: {
       // Who cares about security?
       // I'll surely have to address this sometime soon though.
@@ -48,27 +50,48 @@ function createWindow() {
   }
   // Load the custom Windows XP titlebar.
   if(isDev){
-    startpath = "/../../src/local/start.html"
+    startpath = "/../../src/local/start.html?url="
   } else {
-    startpath = "/../../resources/src/local/start.html"
+    startpath = "/../../resources/src/local/start.html?url="
   }
-  win.loadURL("file:///" +  app.getAppPath().replace(/\\/g, '/') +startpath);
-  win.webContents.on('new-window', (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
+  win.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + "http://sploder.local/update");
+  win.webContents.on('did-finish-load', () => {
+    win.show();
   });
-  // Discord is a nuisance and does not allow it's website to be embedded in an iframe... Workaround below.
-  win.webContents.session.webRequest.onHeadersReceived({ urls: [ "https://discord.com/*" ] },
-  (d, c)=>{
-    if(d.responseHeaders['X-Frame-Options']){
-      delete d.responseHeaders['X-Frame-Options'];
-    } else if(d.responseHeaders['x-frame-options']) {
-      delete d.responseHeaders['x-frame-options'];
+  win.webContents.on('new-window', (event, url) => {
+    if (url.includes("/make/publish.php?s=") || url.includes("&inLauncher=1")) {
+      // Internally handle the new window by creating a popup window
+      // The URL should be on "file:///" +  app.getAppPath().replace(/\\/g, '/') + URL
+      event.preventDefault();
+      win.newwin = new BrowserWindow({
+        backgroundColor: "#32103C",
+        width: 800,
+        height: 600,
+        minWidth: 640,
+        minHeight: 320,
+        frame: false,
+        show: false, // Initially hide the new window
+        webPreferences: {
+          nodeIntegration: true,
+          enableRemoteModule: true,
+          nodeIntegration: true,
+          plugins: true,
+        },
+      });
+      win.newwin.setMenu(null);
+      win.newwin.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + url);
+      win.newwin.webContents.on('did-finish-load', () => {
+        win.newwin.show();
+      });
+      win.newwin.on("closed", () => {
+        win.newwin = null;
+      });
+      win.newwin.webContents.on('new-window', (event, url) => {
+        event.preventDefault();
+        shell.openExternal(url);
+      });
     }
-
-    c({cancel: false, responseHeaders: d.responseHeaders});
-  }
-);
+  });
 }
 
 app.whenReady().then(() => {

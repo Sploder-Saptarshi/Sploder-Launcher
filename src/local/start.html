@@ -7,6 +7,16 @@
     <title>Sploder</title>
 </head>
 <script>
+    // Check get parameter to get URL
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const url = urlParams.get('url');
+
+    // If the URL is not provided, redirect to the update page
+    if (url == null) {
+      window.location.href = "http://sploder.local/update";
+    }
+
     var page;
     var prevpage;
     var pagestat;
@@ -42,7 +52,7 @@ var checkmax = setInterval(checkmax, 100);
 // Keep updating the Discord RPC message
 var rpcinfo;
 function discordrpc() {
-  rpcinfo = document.getElementById("content-frame").contentWindow.window.boops;
+  rpcinfo = document.getElementById("content-frame").contentWindow.window.rpcinfo;
 }
 setInterval(discordrpc, 15000);
 // Custom built code to check if user is online.
@@ -51,7 +61,7 @@ setInterval(discordrpc, 15000);
     if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/"){
     page = document.getElementById("content-frame").contentWindow.location.href;
     } else if(page == undefined) {
-      page = "https://sploder.us.to/play.php?v=406&platform=windows"
+      page = url;
     }
     if(page.includes("offline.html")){
       page = "test";
@@ -59,7 +69,7 @@ setInterval(discordrpc, 15000);
 
     
     const frame = document.getElementById('content-frame');
-    var url = "https://sploder.us.to";
+      var url = "http://sploder.local/php/ping.php";
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
       
@@ -86,8 +96,27 @@ setInterval(discordrpc, 15000);
 
   }
   }
-  
-  
+  // Prevent scrolling using JavaScript
+  window.addEventListener('scroll', () => {
+    window.scrollTo(0, 0); // Keep the window locked at the top
+  });
+
+  // Disable scroll-related JavaScript methods
+  window.onscroll = () => window.scrollTo(0, 0);
+
+  document.addEventListener('wheel', (event) => {
+    event.preventDefault(); // Disable mouse wheel scrolling
+  }, { passive: false });
+
+  document.addEventListener('keydown', (event) => {
+    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(event.key)) {
+      event.preventDefault(); // Disable keyboard scrolling
+    }
+  });
+
+
+
+
 </script>
 <style>
     body, html {
@@ -97,13 +126,11 @@ setInterval(discordrpc, 15000);
         height: 100%;
         width: 100%;
         overflow: hidden;
-        
     }
     iframe {
         width: calc(100% - 6px);
-        height: calc(100% - 28px);
+        height: calc(100% + 22px);
         border: none;
-        
     }
     .titlebar-movable {
         width: 100%;
@@ -148,9 +175,13 @@ setInterval(discordrpc, 15000);
             <button id="close-btn" onclick="win.close()" aria-label="Close"></button>
           </div>
         </div>
-        <div class="window-body" style="width: 100%; height: 100%; margin-left: 3px; margin-top:0px;">
-            <iframe id="content-frame" onload="online();" src="https://sploder.us.to/play.php?v=406&platform=windows">
+        <div class="window-body"
+          style="width: 100%; height: calc(100% - 50px); margin-left: 3px; margin-top:0px; padding-bottom: -50px;">
+          <iframe id="content-frame" onload="online();" src="">
             </iframe>
+          <script>
+            document.getElementById("content-frame").setAttribute('src', url);
+          </script>
            
         </div>
       </div>
