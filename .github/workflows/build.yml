@@ -33,8 +33,8 @@ jobs:
 
     - name: Set up Python and MSVS
       run: |
-        npm config set python "C:\\hostedtoolcache\\windows\\Python\\3.9.0\\x64\\python.exe"
-        npm config set msvs_version 2022
+        set PYTHON=C:\hostedtoolcache\windows\Python\3.9.0\x64\python.exe
+        set GYP_MSVS_VERSION=2022
 
     - name: Fix OpenSSL Issue
       run: |
