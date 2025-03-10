@@ -19,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '20.18.1'
+        node-version: '16'
 
     - name: Cache Yarn
       id: yarn-cache
@@ -48,13 +48,6 @@ jobs:
     - name: Install dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: yarn install
-
-    - name: Patch binding.gyp for openssl_fips
-      run: |
-        $file = "node_modules/register-scheme/binding.gyp"
-        (Get-Content $file) | ForEach-Object {
-          $_ -replace "'openssl_fips != ``\"``\"'", "'openssl_fips != '''' or 'openssl_fips' in vars"
-        } | Set-Content $file
 
     - name: Run build script
       run: .\build.bat
