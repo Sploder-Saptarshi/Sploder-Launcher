@@ -21,14 +21,17 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Install Yarn
+      run: npm install -g yarn
+
     - name: Install dependencies
-      run: npm install
+      run: yarn install
 
     - name: Run build script
       run: .\build.bat
 
     - name: Archive build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: build
         path: build/
