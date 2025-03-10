@@ -23,6 +23,7 @@
     "webpack": "~4.42.1"
   },
   "build": {
+    "asar": true, "files": [ "./dist/**/*" ], "win": {},
     "appId": "com.sploder",
     "productName": "Sploder",
     "nsis": {
