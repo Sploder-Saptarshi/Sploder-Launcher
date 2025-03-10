@@ -22,7 +22,6 @@ jobs:
         node-version: '20.18.1'
 
     - name: Cache Yarn
-      id: yarn-cache
       uses: actions/cache@v3
       with:
         path: |
@@ -32,21 +31,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
 
-    - name: Install Yarn and Build Tools
-      run: npm install -g yarn windows-build-tools && yarn config set ignore-engines true
+    - name: Set up Python and MSVS
+      run: |
+        npm config set python "C:\\hostedtoolcache\\windows\\Python\\3.9.0\\x64\\python.exe"
+        npm config set msvs_version 2022
 
-    - name: Cache node_modules
-      id: node-modules-cache
-      uses: actions/cache@v3
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-modules-
+    - name: Fix OpenSSL Issue
+      run: |
+        set npm_config_openssl_no_asm=true
 
-    - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
-      run: yarn install
+    - name: Install Yarn
+      run: npm install -g yarn && yarn config set ignore-engines true
+
+    - name: Clear Cache and Reinstall
+      run: |
+        npm cache clean --force
+        yarn cache clean
+        rm -rf node_modules yarn.lock
+        yarn install --frozen-lockfile
 
     - name: Run build script
       run: .\build.bat
