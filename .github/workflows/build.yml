@@ -22,6 +22,7 @@ jobs:
         node-version: '20.18.1'
 
     - name: Cache Yarn
+      id: yarn-cache
       uses: actions/cache@v3
       with:
         path: |
@@ -35,6 +36,7 @@ jobs:
       run: npm install -g yarn && yarn config set ignore-engines true
 
     - name: Cache node_modules
+      id: node-modules-cache
       uses: actions/cache@v3
       with:
         path: node_modules
@@ -43,7 +45,7 @@ jobs:
           ${{ runner.os }}-node-modules-
 
     - name: Install dependencies
-      if: steps.yarn-cache.outputs.cache-hit != 'true'
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: yarn install
 
     - name: Run build script
