@@ -21,34 +21,27 @@ jobs:
       with:
         node-version: '20.18.1'
 
-    - name: Cache Yarn
-      uses: actions/cache@v3
+    - name: Install Python
+      uses: actions/setup-python@v4
       with:
-        path: |
-          ~/.npm
-          ~/.cache/yarn
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+        python-version: '3.9'
 
-    - name: Set up Python and MSVS
+    - name: Install Visual Studio Build Tools
+      run: npm install -g windows-build-tools@5.2.2
+      shell: pwsh
+
+    - name: Set up node-gyp environment
       run: |
-        set PYTHON=C:\hostedtoolcache\windows\Python\3.9.0\x64\python.exe
-        set GYP_MSVS_VERSION=2022
+        npm config set python "$(which python)"
+        npm config set msvs_version 2019
+      shell: bash
 
-    - name: Fix OpenSSL Issue
-      run: |
-        set npm_config_openssl_no_asm=true
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
 
-    - name: Install Yarn
-      run: npm install -g yarn && yarn config set ignore-engines true
-
-    - name: Clear Cache and Reinstall
-      run: |
-        npm cache clean --force
-        yarn cache clean
-        Remove-Item -Recurse -Force node_modules,yarn.lock -ErrorAction SilentlyContinue
-        yarn install --frozen-lockfile
+    - name: Force node-gyp rebuild
+      run: yarn rebuild --arch=x64
+      shell: bash
 
     - name: Run build script
       run: .\build.bat
