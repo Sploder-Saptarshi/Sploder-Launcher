@@ -43,15 +43,18 @@ jobs:
         key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node-modules-
- 
-    - name: Set Environment Variables for node-gyp
-      run: |
-        setx OPENSSL_FIPS ""
 
 
     - name: Install dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: yarn install
+
+    - name: Patch binding.gyp for openssl_fips
+      run: |
+        $file = "node_modules/register-scheme/binding.gyp"
+        (Get-Content $file) | ForEach-Object {
+          $_ -replace "'openssl_fips != \"\"'", "'openssl_fips != \"\" or \"openssl_fips\" in vars'"
+        } | Set-Content $file
 
     - name: Run build script
       run: .\build.bat
