@@ -21,27 +21,36 @@ jobs:
       with:
         node-version: '20.18.1'
 
-    - name: Install Python
-      uses: actions/setup-python@v4
+    - name: Cache Yarn
+      id: yarn-cache
+      uses: actions/cache@v3
       with:
-        python-version: '3.9'
+        path: |
+          ~/AppData/Local/Yarn/Cache
+          ~/AppData/Roaming/npm-cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
 
-    - name: Install Visual Studio Build Tools
-      run: npm install -g windows-build-tools@5.2.2
-      shell: pwsh
+    - name: Install Yarn
+      run: npm install -g yarn && yarn config set ignore-engines true
 
-    - name: Set up node-gyp environment
-      run: |
-        npm config set python "$(which python)"
-        npm config set msvs_version 2019
-      shell: bash
+    - name: Cache node_modules
+      id: node-modules-cache
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-modules-
+ 
+    - name: Install node-gyp with patch
+      run: npm install -g node-gyp --build-from-source
+
 
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
-
-    - name: Force node-gyp rebuild
-      run: yarn rebuild --arch=x64
-      shell: bash
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      run: yarn install
 
     - name: Run build script
       run: .\build.bat
