@@ -90,6 +90,9 @@ function createWindow() {
         event.preventDefault();
         shell.openExternal(url);
       });
+    } else {
+      event.preventDefault();
+      shell.openExternal(url);
     }
   });
 }
