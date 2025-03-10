@@ -44,8 +44,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-modules-
  
-    - name: Install node-gyp with patch
-      run: npm install -g node-gyp --build-from-source
+    - name: Set Environment Variables for node-gyp
+      run: |
+        setx OPENSSL_FIPS ""
 
 
     - name: Install dependencies
