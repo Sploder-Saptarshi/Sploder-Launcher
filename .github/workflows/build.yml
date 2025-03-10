@@ -53,7 +53,7 @@ jobs:
       run: |
         $file = "node_modules/register-scheme/binding.gyp"
         (Get-Content $file) | ForEach-Object {
-          $_ -replace "'openssl_fips != \"\"'", "'openssl_fips != '''' or 'openssl_fips' in vars'"
+          $_ -replace "'openssl_fips != \"\"'", "'openssl_fips != '''' or 'openssl_fips' in vars"
         } | Set-Content $file
 
     - name: Run build script
