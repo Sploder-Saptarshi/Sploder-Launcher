@@ -47,7 +47,7 @@ jobs:
       run: |
         npm cache clean --force
         yarn cache clean
-        rm -rf node_modules yarn.lock
+        Remove-Item -Recurse -Force node_modules,yarn.lock -ErrorAction SilentlyContinue
         yarn install --frozen-lockfile
 
     - name: Run build script
