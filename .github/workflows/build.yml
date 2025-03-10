@@ -32,8 +32,7 @@ jobs:
           ${{ runner.os }}-yarn-
 
     - name: Install Yarn
-      run: npm install -g yarn
-      run: yarn config set ignore-engines true
+      run: npm install -g yarn && yarn config set ignore-engines true
 
     - name: Cache node_modules
       uses: actions/cache@v3
