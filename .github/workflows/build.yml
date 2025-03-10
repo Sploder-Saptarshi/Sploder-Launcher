@@ -21,13 +21,17 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Cache Yarn
+    # Cache Yarn, Node Modules, and Yarn Global Cache
+    - name: Cache Yarn and Node Modules
       id: yarn-cache
       uses: actions/cache@v3
       with:
         path: |
+          ~/.yarn
+          ~/.cache/yarn
           ~/AppData/Local/Yarn/Cache
           ~/AppData/Roaming/npm-cache
+          node_modules
         key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-yarn-
@@ -35,23 +39,19 @@ jobs:
     - name: Install Yarn
       run: npm install -g yarn && yarn config set ignore-engines true
 
-    - name: Cache node_modules
-      id: node-modules-cache
-      uses: actions/cache@v3
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-modules-
-
-
+    # Install dependencies only if cache was not restored
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
-      run: yarn install
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
+      run: yarn install --network-timeout 100000
 
+    - name: Tree
+      run: tree
+  
+    # Build script
     - name: Run build script
       run: .\build.bat
 
+    # Archive build artifacts
     - name: Archive build artifacts
       uses: actions/upload-artifact@v4
       with:
