@@ -21,11 +21,29 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Cache Yarn
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+          ~/.cache/yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
     - name: Install Yarn
       run: npm install -g yarn
 
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-modules-
+
     - name: Install dependencies
-      run: npm install
+      run: yarn install
 
     - name: Run build script
       run: .\build.bat
