@@ -2,6 +2,7 @@
   "name": "Sploder",
   "version": "5.0.0",
   "author": "Saptarshi",
+   "main": "dist/main/main.js",
   "description": "Sploder Launcher",
   "license": "MIT",
   "scripts": {
