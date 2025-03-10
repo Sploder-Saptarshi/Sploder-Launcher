@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - name: Checkout repository
@@ -43,6 +43,7 @@ jobs:
           ${{ runner.os }}-node-modules-
 
     - name: Install dependencies
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
       run: yarn install
 
     - name: Run build script
