@@ -32,8 +32,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
 
-    - name: Install Yarn
-      run: npm install -g yarn && yarn config set ignore-engines true
+    - name: Install Yarn and Build Tools
+      run: npm install -g yarn windows-build-tools && yarn config set ignore-engines true
 
     - name: Cache node_modules
       id: node-modules-cache
