@@ -22,10 +22,10 @@ jobs:
         node-version: '20'
 
     - name: Install Yarn
-      run: npm install -g yarn
+      run: npm install -g yarn  --openssl_fips=''
 
     - name: Install dependencies
-      run: yarn install
+      run: npm install  --openssl_fips=''
 
     - name: Run build script
       run: .\build.bat
