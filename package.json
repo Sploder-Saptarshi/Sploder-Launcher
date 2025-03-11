@@ -35,7 +35,8 @@
     },
     "mac": {
       "icon": "build/macos.png",
-      "identity": null
+      "identity": null,
+      "target": ["dir"]
     },
     "nsis": {
       "allowElevation": "true",
