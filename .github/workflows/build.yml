@@ -96,6 +96,13 @@ jobs:
             name: Windows Portable Files
             path: dist/*.zip
 
+        - name: Upload .app files
+          if: runner.os == 'macOS'
+          uses: actions/upload-artifact@v4
+          with:
+            name: macOS .app
+            path: dist/*.app
+
         - name: Upload .snap files
           if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
