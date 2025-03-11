@@ -55,13 +55,9 @@ jobs:
           run: |
             sudo snap install snapcraft --classic
 
-        - name: Add tar to PATH
+        - name: Add tar and snap to PATH
           if: runner.os == 'Linux'
-          run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH
-
-        - name: Add snap to PATH
-          if: runner.os == 'Linux'
-          run: echo "/snap/bin" >> $GITHUB_PATH
+          run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH && echo "/snap/bin" >> $GITHUB_PATH
 
         - name: Cache Electron binaries
           id: electron-cache
