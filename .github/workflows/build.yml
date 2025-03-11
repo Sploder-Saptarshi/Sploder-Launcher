@@ -42,11 +42,6 @@ jobs:
         - name: Install Yarn
           run: npm install -g yarn && yarn config set ignore-engines true
 
-        - name: Add node_modules/.bin to PATH (Windows)
-          if: runner.os == 'Windows'
-          run: echo "$(Resolve-Path .\node_modules\.bin)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
-
-
         - name: Cache node_modules
           id: node-modules-cache
           uses: actions/cache@v3
@@ -59,7 +54,7 @@ jobs:
 
         - name: Install dependencies
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
-          run: yarn install
+          run: npx yarn install
 
         - name: Install snapcraft
           if: runner.os == 'Linux'
