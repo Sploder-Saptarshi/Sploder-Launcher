@@ -60,9 +60,9 @@ jobs:
           if: runner.os == 'Linux'
           run: sudo snap install snapcraft --classic
 
-        - name: Install tar
+        - name: Add tar to PATH
           if: runner.os == 'Linux'
-          run: sudo apt-get update && sudo apt-get install -y tar
+          run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH
 
 
         - name: Add snap to PATH
