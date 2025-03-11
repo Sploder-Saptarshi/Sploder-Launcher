@@ -40,9 +40,20 @@ jobs:
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
           run: npm install
 
-        - name: Install snapcraft
+        - name: Cache snapcraft
           if: runner.os == 'Linux'
-          run: sudo snap install snapcraft --classic
+          id: snapcraft-cache
+          uses: actions/cache@v3
+          with:
+            path: /var/lib/snapd/snaps
+            key: ${{ runner.os }}-snapcraft-${{ hashFiles('**/snapcraft.yaml') }}
+            restore-keys: |
+              ${{ runner.os }}-snapcraft-
+
+        - name: Install Snapcraft
+          if: steps.snapcraft-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
+          run: |
+            sudo snap install snapcraft --classic
 
         - name: Add tar to PATH
           if: runner.os == 'Linux'
