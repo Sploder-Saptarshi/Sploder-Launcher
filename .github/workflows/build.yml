@@ -53,8 +53,17 @@ jobs:
     - name: Run build script
       run: .\build.bat
 
-    - name: Archive build artifacts
+    - name: Zip portable builds
+      run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip %% Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
+
+    - name: Archive .exe files
       uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: Installer Files
         path: dist/*.exe
+
+    - name: Archive .zip files
+      uses: actions/upload-artifact@v4
+      with:
+        name: Portable Files
+        path: dist/*.zip
