@@ -68,8 +68,8 @@ jobs:
           if: runner.os == 'Linux'
           run: echo "/snap/bin" >> $GITHUB_PATH
 
-        - name: Run build script on Linux
-          if: runner.os == 'Linux'
+        - name: Run build script on Linux and MacOS
+          if: runner.os == 'Linux' || runner.os == 'macos-13'
           run: yarn dist
           env:
             PATH: ./node_modules/.bin:$PATH
