@@ -10,7 +10,7 @@
     "compile": "electron-webpack",
     "dist-64bit": "yarn compile && electron-builder",
     "dist-32bit": "yarn compile && electron-builder --ia32",
-    "dist": "yarn compile && (node -e \"if (process.platform === 'win32') { require('child_process').execSync('npx yarn electron-builder --ia32 --x64', { stdio: 'inherit' }); } else { require('child_process').execSync('electron-builder', { stdio: 'inherit' }); }\")",
+    "dist": "yarn compile && (node -e \"if (process.platform === 'win32') { require('child_process').execSync('npx yarn electron-builder --ia32 --x64', { stdio: 'inherit' }); } else { require('child_process').execSync('electron-builder --linux snap', { stdio: 'inherit' }); }\")",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {
