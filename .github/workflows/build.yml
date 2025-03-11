@@ -69,13 +69,13 @@ jobs:
 
         - name: Run build script on Linux
           if: runner.os == 'Linux'
-          run: npx yarn dist-snap
+          run: npx yarn dist
           env:
             PATH: ./node_modules/.bin:$PATH
 
         - name: Run build script on Windows
           if: runner.os == 'Windows'
-          run: .\build.bat
+          run: npx yarn dist
 
         - name: Zip portable builds
           if: runner.os == 'Windows'
