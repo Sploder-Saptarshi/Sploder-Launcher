@@ -60,6 +60,11 @@ jobs:
           if: runner.os == 'Linux'
           run: sudo snap install snapcraft --classic
 
+        - name: Add snap to PATH
+          if: runner.os == 'Linux'
+          run: echo "/snap/bin" >> $GITHUB_PATH
+
+
 
         - name: Run build script
           run: yarn dist
