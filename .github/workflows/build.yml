@@ -53,13 +53,11 @@ jobs:
         - name: Install dependencies
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
           run: yarn install
-        
-        - name: Update PATH
-          env:
-            PATH: ./node_modules/.bin:$PATH
 
         - name: Run build script
           run: yarn dist
+          env:
+            PATH: ./node_modules/.bin:$PATH
 
         - name: Zip portable builds
           run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
