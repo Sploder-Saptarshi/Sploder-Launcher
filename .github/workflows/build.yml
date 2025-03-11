@@ -100,7 +100,7 @@ jobs:
           if: runner.os == 'macOS'
           uses: actions/upload-artifact@v4
           with:
-            name: macOS .app
+            name: macOS Portable Files
             path: dist/mac
 
         - name: Upload .snap files
