@@ -42,6 +42,11 @@ jobs:
         - name: Install Yarn
           run: npm install -g yarn && yarn config set ignore-engines true
 
+        - name: Add node_modules/.bin to PATH (Windows)
+          if: runner.os == 'Windows'
+          run: echo "$(Resolve-Path .\node_modules\.bin)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
+
         - name: Cache node_modules
           id: node-modules-cache
           uses: actions/cache@v3
@@ -77,21 +82,25 @@ jobs:
             PATH: ./node_modules/.bin:$PATH
 
         - name: Zip portable builds
+          if: runner.os == 'Windows'
           run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
 
         - name: Archive .exe files
+          if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
             name: Installer Files
             path: dist/*.exe
 
         - name: Archive .zip files
+          if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
             name: Portable Files
             path: dist/*.zip
 
         - name: Archive .snap files
+          if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
           with:
             name: Installer Files
