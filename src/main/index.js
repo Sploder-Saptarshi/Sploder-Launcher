@@ -15,7 +15,10 @@ switch (process.platform) {
   case "linux":
     pluginName = process.arch == 'x64' ? 'x64/libpepflashplayer.so' : 'x32/libpepflashplayer.so';
     break;
-  
+  // If macOS, use PepperFlashPlayer.plugin
+  case "darwin":
+    pluginName = 'PepperFlashPlayer.plugin';
+    break;  
   default:
     pluginName = 'x64/pepflashplayer.dll';
     break;
@@ -51,7 +54,63 @@ function createWindow() {
     
   }
   );
-  win.setMenu(null);
+  macosMenu = [
+    {
+      label: app.name,
+      submenu: [
+        {
+          label: "About " + app.name,
+          role: "about"
+        },
+        {
+          type: "separator"
+        },
+        {
+          label: "Quit",
+          role: "quit"
+        }
+      ]
+    },
+    // Add edit menu for macOS
+    {
+      label: "Edit",
+      submenu: [
+        {
+          label: "Undo",
+          role: "undo"
+        },
+        {
+          label: "Redo",
+          role: "redo"
+        },
+        {
+          type: "separator"
+        },
+        {
+          label: "Cut",
+          role: "cut"
+        },
+        {
+          label: "Copy",
+          role: "copy"
+        },
+        {
+          label: "Paste",
+          role: "paste"
+        },
+        {
+          label: "Select All",
+          role: "selectAll"
+        }
+      ]
+    }
+  ];
+  // If not on macOS, disable the menu.
+  if (process.platform !== "darwin") {
+    win.setMenu(null);
+  } else {
+    win.setMenu(macosMenu);
+  }
   win.maximize();
   if(isDev){
     win.openDevTools();
@@ -114,7 +173,7 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", function () {
-  if (process.platform !== "darwin") app.quit();
+  app.quit();
 });
 
 
