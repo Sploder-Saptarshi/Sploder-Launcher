@@ -80,7 +80,7 @@ jobs:
 
         - name: Zip portable builds
           if: runner.os == 'Windows'
-          run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
+          run: Compress-Archive -Path .\dist\win-unpacked\* -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\* -DestinationPath .\dist\Sploder-Portable-ia32.zip
 
         - name: Upload .exe files
           if: runner.os == 'Windows'
