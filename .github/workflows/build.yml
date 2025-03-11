@@ -32,9 +32,12 @@ jobs:
           uses: actions/cache@v3
           with:
             path: |
-              ~/AppData/Local/Yarn/Cache
-              ~/AppData/Roaming/npm-cache
               ~/.yarn
+              ~/.cache/yarn
+              ~/AppData/Local/Yarn/Cache
+              ~/AppData/Local/Yarn/bin
+              ~/AppData/Roaming/npm-cache
+              ~/Library/Caches/Yarn
             key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
             restore-keys: |
               ${{ runner.os }}-yarn-
