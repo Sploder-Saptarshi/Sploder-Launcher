@@ -69,7 +69,7 @@ jobs:
 
         - name: Run build script on Linux
           if: runner.os == 'Linux'
-          run: npx yarn dist --verbose
+          run: npx yarn dist
           env:
             PATH: ./node_modules/.bin:$PATH
 
