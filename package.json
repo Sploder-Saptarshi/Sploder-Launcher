@@ -26,6 +26,7 @@
   },
   "build": {
     "asar": true, "files": [ "./dist/main/*" ], "win": {},
+    "publish": null,
     "appId": "com.sploder",
     "productName": "Sploder",
     "linux": {
