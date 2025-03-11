@@ -28,6 +28,9 @@
     "asar": true, "files": [ "./dist/main/*" ], "win": {},
     "appId": "com.sploder",
     "productName": "Sploder",
+    "linux": {
+      "target": ["snap"]
+    },
     "nsis": {
       "allowElevation": "true",
       "oneClick": "false",

@@ -54,6 +54,11 @@ jobs:
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
           run: yarn install
 
+        - name: Install snapcraft
+          if: runner.os == 'Linux'
+          run: sudo snap install snapcraft --classic
+
+
         - name: Run build script
           run: yarn dist
           env:
