@@ -33,6 +33,9 @@
       "target": ["snap"],
       "category": "Games"
     },
+    "mac": {
+      "icon": "build/macos.png"
+    },
     "nsis": {
       "allowElevation": "true",
       "oneClick": "false",
