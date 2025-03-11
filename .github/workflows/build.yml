@@ -58,7 +58,7 @@ jobs:
       run: yarn dist
 
     - name: Zip portable builds
-      run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip %% Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
+      run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
 
     - name: Archive .exe files
       uses: actions/upload-artifact@v4
