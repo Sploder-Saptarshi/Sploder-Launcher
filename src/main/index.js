@@ -121,7 +121,7 @@ function createWindow() {
   } else {
     startpath = "/../../resources/src/local/start.html?url="
   }
-  win.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + "http://sploder.us.to");
+  win.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + "http://sploder.local/update");
   win.webContents.on('did-finish-load', () => {
     win.show();
   });
