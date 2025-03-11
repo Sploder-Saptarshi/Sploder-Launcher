@@ -75,7 +75,7 @@ jobs:
 
         - name: Run build script on Windows
           if: runner.os == 'Windows'
-          run: build.bat
+          run: .\build.bat
           env:
             PATH: ./node_modules/.bin:$PATH
 
