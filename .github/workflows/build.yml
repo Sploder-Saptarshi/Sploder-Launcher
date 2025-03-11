@@ -13,9 +13,8 @@ jobs:
       runs-on: ${{ matrix.os }}
 
       strategy:
-          fail-fast: false
           matrix:
-              os: [ubuntu-22.04, windows-latest]
+              os: [ubuntu-latest, windows-latest]
 
       steps:
         - name: Checkout repository
@@ -64,15 +63,12 @@ jobs:
           if: runner.os == 'Linux'
           run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH
 
-
         - name: Add snap to PATH
           if: runner.os == 'Linux'
           run: echo "/snap/bin" >> $GITHUB_PATH
 
-
-
         - name: Run build script
-          run: yarn dist
+          run: npx yarn dist
           env:
             PATH: ./node_modules/.bin:$PATH
 
@@ -84,19 +80,19 @@ jobs:
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
-            name: Installer Files
+            name: Windows Installer Files
             path: dist/*.exe
 
         - name: Archive .zip files
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
-            name: Portable Files
+            name: Windows Portable Files
             path: dist/*.zip
 
         - name: Archive .snap files
           if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
           with:
-            name: Installer Files
+            name: Linux Installer Files
             path: dist/*.snap
