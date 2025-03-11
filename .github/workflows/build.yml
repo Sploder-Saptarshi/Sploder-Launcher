@@ -63,6 +63,19 @@ jobs:
           if: runner.os == 'Linux'
           run: echo "/snap/bin" >> $GITHUB_PATH
 
+        - name: Cache Electron binaries
+          id: electron-cache
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/.cache/electron
+              ~/.cache/electron-builder
+              ~/AppData/Local/electron
+              ~/AppData/Local/electron-builder
+            key: ${{ runner.os }}-electron-${{ hashFiles('package.json') }}
+            restore-keys: |
+              ${{ runner.os }}-electron-
+
         - name: Run build script on Linux and MacOS
           if: runner.os == 'Linux' || runner.os == 'macOS'
           run: yarn dist
