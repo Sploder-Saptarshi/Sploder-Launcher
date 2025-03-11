@@ -16,64 +16,64 @@ jobs:
           matrix:
               os: [ubuntu-latest, windows-latest]
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+        - name: Set up Node.js
+          uses: actions/setup-node@v2
+          with:
+            node-version: '16'
 
-    - name: Cache Yarn
-      id: yarn-cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/AppData/Local/Yarn/Cache
-          ~/AppData/Roaming/npm-cache
-          ~/.yarn
-        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+        - name: Cache Yarn
+          id: yarn-cache
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/AppData/Local/Yarn/Cache
+              ~/AppData/Roaming/npm-cache
+              ~/.yarn
+            key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+            restore-keys: |
+              ${{ runner.os }}-yarn-
 
-    - name: Install Yarn
-      run: npm install -g yarn && yarn config set ignore-engines true
+        - name: Install Yarn
+          run: npm install -g yarn && yarn config set ignore-engines true
 
-    - name: Cache node_modules
-      id: node-modules-cache
-      uses: actions/cache@v3
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-modules-
+        - name: Cache node_modules
+          id: node-modules-cache
+          uses: actions/cache@v3
+          with:
+            path: node_modules
+            key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+            restore-keys: |
+              ${{ runner.os }}-node-modules-
 
 
-    - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
-      run: yarn install
+        - name: Install dependencies
+          if: steps.node-modules-cache.outputs.cache-hit != 'true'
+          run: yarn install
 
-    - name: Run build script
-      run: yarn dist
+        - name: Run build script
+          run: yarn dist
 
-    - name: Zip portable builds
-      run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
+        - name: Zip portable builds
+          run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
 
-    - name: Archive .exe files
-      uses: actions/upload-artifact@v4
-      with:
-        name: Installer Files
-        path: dist/*.exe
+        - name: Archive .exe files
+          uses: actions/upload-artifact@v4
+          with:
+            name: Installer Files
+            path: dist/*.exe
 
-    - name: Archive .zip files
-      uses: actions/upload-artifact@v4
-      with:
-        name: Portable Files
-        path: dist/*.zip
+        - name: Archive .zip files
+          uses: actions/upload-artifact@v4
+          with:
+            name: Portable Files
+            path: dist/*.zip
 
-    - name: Archive .snap files
-      uses: actions/upload-artifact@v4
-      with:
-        name: Installer Files
-        path: dist/*.snap
+        - name: Archive .snap files
+          uses: actions/upload-artifact@v4
+          with:
+            name: Installer Files
+            path: dist/*.snap
