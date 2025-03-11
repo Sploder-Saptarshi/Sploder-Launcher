@@ -1,6 +1,9 @@
 const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
-const DiscordRPC = require('discord-rpc');
+// If not on windows, disable RPC
+if (process.platform !== "win32") {
+  const DiscordRPC = require('discord-rpc');
+}
 let win;
 let pluginName;
 const isDev = false; // Change to false if you want to disable development mode and package the application.
@@ -8,6 +11,11 @@ switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
     break;
+  // If linux, use libpepflashplayer.so
+  case "linux":
+    pluginName = process.arch == 'x64' ? 'x64/libpepflashplayer.so' : 'x32/libpepflashplayer.so';
+    break;
+  
   default:
     pluginName = 'x64/pepflashplayer.dll';
     break;
@@ -110,29 +118,30 @@ app.on("window-all-closed", function () {
 });
 
 
-// Replace with your own Discord RPC client ID.
-const clientId = '915116210570539058';
-const rpc = new DiscordRPC.Client({ transport: 'ipc' });
-const startTimestamp = new Date();
+if (process.platform !== "win32") {
+  const clientId = '915116210570539058';
+  const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+  const startTimestamp = new Date();
 
-async function setActivity() {
-  if (!rpc || !win) {
-    return;
+  async function setActivity() {
+    if (!rpc || !win) {
+      return;
+    }
+    const boops = await win.webContents.executeJavaScript('rpcinfo');
+    rpc.setActivity({
+      details: `${boops}`,
+      startTimestamp,
+      largeImageKey: 'icon',
+      largeImageText: `${boops}`
+    });
   }
-  const boops = await win.webContents.executeJavaScript('rpcinfo');
-  rpc.setActivity({
-    details: `${boops}`,
-    startTimestamp,
-    largeImageKey: 'icon',
-    largeImageText: `${boops}`
-  });
-}
 
-rpc.on('ready', () => {
-  setActivity();
-  setInterval(() => {
+  rpc.on('ready', () => {
     setActivity();
-  }, 15e3);
-});
+    setInterval(() => {
+      setActivity();
+    }, 15e3);
+  });
 
-rpc.login({ clientId }).catch();
+  rpc.login({ clientId }).catch();
+}
