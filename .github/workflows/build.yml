@@ -26,6 +26,12 @@ jobs:
           with:
             node-version: '16'
 
+        - name: Install Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.x'
+
+
         - name: Cache Yarn
           id: yarn-cache
           uses: actions/cache@v3
