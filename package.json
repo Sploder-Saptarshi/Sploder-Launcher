@@ -34,7 +34,8 @@
       "category": "Games"
     },
     "mac": {
-      "icon": "build/macos.png"
+      "icon": "build/macos.png",
+      "identity": null
     },
     "nsis": {
       "allowElevation": "true",
