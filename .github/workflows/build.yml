@@ -67,9 +67,13 @@ jobs:
           if: runner.os == 'Linux'
           run: echo "/snap/bin" >> $GITHUB_PATH
 
-        - name: Run build script
-          shell: cmd
+        - name: Run build script on Linux
           run: npx yarn dist
+          env:
+            PATH: ./node_modules/.bin:$PATH
+
+        - name: Run build script on Windows
+          run: build.bat
           env:
             PATH: ./node_modules/.bin:$PATH
 
