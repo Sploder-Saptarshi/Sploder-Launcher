@@ -82,21 +82,21 @@ jobs:
           if: runner.os == 'Windows'
           run: Compress-Archive -Path .\dist\win-unpacked\ -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\ -DestinationPath .\dist\Sploder-Portable-ia32.zip
 
-        - name: Archive .exe files
+        - name: Upload .exe files
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
             name: Windows Installer Files
             path: dist/*.exe
 
-        - name: Archive .zip files
+        - name: Upload .zip files
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
             name: Windows Portable Files
             path: dist/*.zip
 
-        - name: Archive .snap files
+        - name: Upload .snap files
           if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
           with:
