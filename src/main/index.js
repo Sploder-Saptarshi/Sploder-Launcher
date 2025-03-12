@@ -1,7 +1,7 @@
 const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
 // If not on windows, disable RPC
-if (process.platform !== "win32") {
+if (process.platform === "win32") {
   const DiscordRPC = require('discord-rpc');
 }
 let win;
@@ -177,7 +177,7 @@ app.on("window-all-closed", function () {
 });
 
 
-if (process.platform !== "win32") {
+if (process.platform === "win32") {
   const clientId = '915116210570539058';
   const rpc = new DiscordRPC.Client({ transport: 'ipc' });
   const startTimestamp = new Date();
