@@ -7,15 +7,16 @@
     <title>Sploder</title>
 </head>
 <script>
-    // Check get parameter to get URL
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const url = urlParams.get('url');
-
-    // If the URL is not provided, redirect to the update page
-    if (url == null) {
-      window.location.href = "https://sploder.xyz/update";
+ document.addEventListener('DOMContentLoaded', function() {
+    function getUrl() {
+        return new URL(window.location.href).searchParams.get('url');
     }
+    // Check get parameter to get URL
+    let url = getUrl();
+    document.getElementById('sploder-url').textContent = getUrl();
+    document.getElementById("content-frame").setAttribute('src', url);
+    // If the URL is not provided, redirect to the update page
+    // window.href.location = urlParam + '/update';
 
     var page;
     var prevpage;
@@ -58,29 +59,27 @@ setInterval(discordrpc, 15000);
 // Custom built code to check if user is online.
 // I have no idea how or why this works.
   function online() {
-    if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/"){
-    page = document.getElementById("content-frame").contentWindow.location.href;
-    } else if(page == undefined) {
+    if (document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/") {
+        page = document.getElementById("content-frame").contentWindow.location.href;
+    } else if (page == undefined) {
       page = url;
     }
-    if(page.includes("offline.html")){
+
+    if (page.includes("offline.html")){
       page = "test";
     } else {
-
-    
-    const frame = document.getElementById('content-frame');
-      var url = "https://sploder.xyz/php/ping.php";
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-      
-        if (this.readyState == 4 && this.status != 200 && frame.getAttribute('src') != "offline.html?retry="+page) {
+        const frame = document.getElementById('content-frame');
+        const pingUrl = url + '/php/ping.php';
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+        const offlineUrl = "offline.html?retry="+page+'&url='+encodeURIComponent(urlParam);
+        if (this.readyState == 4 && this.status != 200 && frame.getAttribute('src') != offlineUrl) {
           if(page != "test") {
-          prevpage = page;
+            prevpage = page;
           }
           pagestat = "offline";
           page = "offline.html";
-      frame.setAttribute('src', 'offline.html?retry='+page);
-      
+          frame.setAttribute('src', offlineUrl);
         } else if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/") {
           page = document.getElementById("content-frame").contentWindow.location.href;
         } else {
@@ -89,11 +88,9 @@ setInterval(discordrpc, 15000);
           }
           //pagestat = "online";
         }
-        
     };
-    xhttp.open("GET", url, true);
+    xhttp.open("GET", pingUrl, true);
     xhttp.send();
-
   }
   }
   // Prevent scrolling using JavaScript
@@ -113,10 +110,7 @@ setInterval(discordrpc, 15000);
       event.preventDefault(); // Disable keyboard scrolling
     }
   });
-
-
-
-
+});
 </script>
 <style>
     body, html {
@@ -163,11 +157,10 @@ setInterval(discordrpc, 15000);
     }
 </style>
 <body>
-  
     <div class="window" style="width: 100%; height: calc(100% - 3px)">
         <div class="title-bar">
           <img class="title-bar-icon" src="images/icon.png">
-          <div class="title-bar-text">Sploder</div>
+          <div class="title-bar-text">Sploder <span id="sploder-url"></span></div>
           <div class="titlebar-movable"></div>
           <div class="title-bar-controls">
             <button id="min-btn" onclick="win.minimize()" aria-label="Minimize"></button>
@@ -178,13 +171,8 @@ setInterval(discordrpc, 15000);
         <div class="window-body"
           style="width: 100%; height: calc(100% - 50px); margin-left: 3px; margin-top:0px; padding-bottom: -50px;">
           <iframe id="content-frame" onload="online();" src="">
-            </iframe>
-          <script>
-            document.getElementById("content-frame").setAttribute('src', url);
-          </script>
-           
+          </iframe>
         </div>
       </div>
-      
 </body>
 </html>
