@@ -1,6 +1,7 @@
 const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
 // If not on windows, disable RPC
+let DiscordRPC;
 if (process.platform === "win32") {
   const DiscordRPC = require('discord-rpc');
 }
