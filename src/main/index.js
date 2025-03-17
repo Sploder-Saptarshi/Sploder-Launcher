@@ -33,9 +33,6 @@ if(isDev){
 
 app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
-app.commandLine.appendSwitch('enable-features', 'DnsOverHttps');
-app.commandLine.appendSwitch('dns-over-https-servers', 'https://cloudflare-dns.com/dns-query');
-
 // I do not know why this exists or what this does.
 app.commandLine.appendSwitch('disable-site-isolation-trials')
 function createWindow() {
