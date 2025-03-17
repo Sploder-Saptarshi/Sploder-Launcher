@@ -1,5 +1,16 @@
 const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
+process.env.NODE_ENV || 'development';
+
+const config = {
+    SPLODER_URL: "http://127.0.0.1:8010",
+    DEV: !app.isPackaged,
+}
+const isDev = config.DEV;
+if (isDev) {
+    console.log(config);
+}
+
 // If not on windows, disable RPC
 let DiscordRPC;
 if (process.platform == "win32") {
@@ -7,7 +18,6 @@ if (process.platform == "win32") {
 }
 let win;
 let pluginName;
-const isDev = false; // Change to false if you want to disable development mode and package the application.
 switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
@@ -116,13 +126,25 @@ function createWindow() {
   if(isDev){
     win.openDevTools();
   }
-  // Load the custom Windows XP titlebar.
-  if(isDev){
-    startpath = "/../../src/local/start.html?url="
-  } else {
-    startpath = "/../../resources/src/local/start.html?url="
+
+  function getSploderUrl(path='') {
+    return encodeURIComponent(config.SPLODER_URL + path);
   }
-  win.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + "https://sploder.xyz/update");
+  // Load the custom Windows XP titlebar.
+  if(isDev) { 
+    startpath = '/../../src/local/start.html?url='
+    console.log('startpath: ', startpath);
+  } else {
+    startpath = '/../../resources/src/local/start.html?url='
+  }
+  function loadURLFromStartPath(appendedPath='') {
+    const path = "file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + getSploderUrl() + appendedPath;
+    if (isDev) {
+      console.log(path);
+    }
+    win.loadURL(path);
+  }
+  loadURLFromStartPath();
   win.webContents.on('did-finish-load', () => {
     win.show();
   });
@@ -147,7 +169,7 @@ function createWindow() {
         },
       });
       win.newwin.setMenu(null);
-      win.newwin.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + url);
+      loadURLFromStartPath(url);
       win.newwin.webContents.on('did-finish-load', () => {
         win.newwin.show();
       });
@@ -177,8 +199,7 @@ app.on("window-all-closed", function () {
   app.quit();
 });
 
-
-if (process.platform == "win32") {
+if (process.platform === "win32") {
   const clientId = '915116210570539058';
   const rpc = new DiscordRPC.Client({ transport: 'ipc' });
   const startTimestamp = new Date();
