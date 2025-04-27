@@ -2,7 +2,7 @@
 A project that aims to revive <a href="https://sploder.net">sploder</a>.<br>
 Join the <a href="https://discord.gg/cHGz362sdC">Discord server</a>!
 <h1>How to use:</h1>
-- Download the <a href="https://github.com/Sploder-Saptarshi/Sploder-Launcher/releases/latest](https://mega.nz/file/LBdDWK6T#M6vhXcOXaFxCIRzUXM_mGP9N-v3q7M3FE-QNVSfme4U)">latest release</a> from here.<br>
+- Download the <a href="https://mega.nz/file/LBdDWK6T#M6vhXcOXaFxCIRzUXM_mGP9N-v3q7M3FE-QNVSfme4U">latest release</a> from here.<br>
 - Run the installer.<br>
 - Done.<br>
 <h1>How to build:</h1>
