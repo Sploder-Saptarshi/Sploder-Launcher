@@ -1,8 +1,8 @@
 {
   "name": "Sploder",
   "version": "5.0.0",
-  "author": "Saptarshi",
-   "main": "dist/main/main.js",
+  "author": "Saptarshi <saptarshi12345yt@gmail.com>",
+  "main": "dist/main/main.js",
   "description": "Sploder Launcher",
   "license": "MIT",
   "scripts": {
@@ -10,7 +10,7 @@
     "compile": "electron-webpack",
     "dist-64bit": "yarn compile && electron-builder",
     "dist-32bit": "yarn compile && electron-builder --ia32",
-    "dist": "yarn compile && (node -e \"if (process.platform === 'win32') { require('child_process').execSync('npx yarn electron-builder --ia32 --x64', { stdio: 'inherit' }); } else if (process.platform === 'darwin') { require('child_process').execSync('electron-builder --mac', { stdio: 'inherit' }); } else { require('child_process').execSync('electron-builder --linux snap', { stdio: 'inherit' }); }\")",
+    "dist": "yarn compile && (node -e \"if (process.platform === 'win32') { require('child_process').execSync('npx yarn electron-builder --ia32 --x64', { stdio: 'inherit' }); } else if (process.platform === 'darwin') { require('child_process').execSync('electron-builder --mac', { stdio: 'inherit' }); } else { require('child_process').execSync('electron-builder --linux appimage snap deb rpm', { stdio: 'inherit' }); }\")",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {

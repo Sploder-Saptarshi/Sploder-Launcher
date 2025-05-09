@@ -30,7 +30,7 @@ if(isDev){
 } else {
   flashpath = path.join(__dirname + "/../plugins/", pluginName)
 }
-
+if (process.platform === "linux") app.commandLine.appendSwitch("no-sandbox");
 app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
 // I do not know why this exists or what this does.

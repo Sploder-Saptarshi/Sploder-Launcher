@@ -111,5 +111,33 @@ jobs:
           if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
           with:
-            name: Linux Installer Files
+            name: Linux Snap Files
             path: dist/*.snap
+
+        - name: Upload .deb files
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: Linux deb Files
+            path: dist/*.deb
+
+        - name: Upload .rpm files
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: Linux rpm Files
+            path: dist/*.rpm
+
+        - name: Upload .AppImage files
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: Linux AppImage Files
+            path: dist/*.AppImage
+        
+        - name: Upload .zip files
+          if: runner.os == 'Linux'
+          uses: actions/upload-artifact@v4
+          with:
+            name: Linux Portable Files
+            path: dist/linux-unpacked
