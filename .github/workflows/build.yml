@@ -45,9 +45,9 @@ jobs:
           run: |
             sudo snap install snapcraft --classic
 
-        - name: Add tar and snap to PATH
+        - name: Add tar and snap to PATH and install libarchive-tools
           if: runner.os == 'Linux'
-          run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH && echo "/snap/bin" >> $GITHUB_PATH
+          run: echo "$(dirname "$(which tar)")" >> $GITHUB_PATH && echo "/snap/bin" >> $GITHUB_PATH && sudo apt-get install -y libarchive-tools
 
         - name: Cache Electron binaries
           id: electron-cache
