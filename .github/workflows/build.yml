@@ -68,6 +68,14 @@ jobs:
           env:
             PATH: ./node_modules/.bin:$PATH
 
+        
+        - name: test
+          if: runner.os == 'Linux' || runner.os == 'macOS'
+          run: ls dist
+          env:
+            PATH: ./node_modules/.bin:$PATH
+
+
         - name: Run build script on Windows
           if: runner.os == 'Windows'
           run: npx yarn dist
