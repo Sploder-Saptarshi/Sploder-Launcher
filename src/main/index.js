@@ -7,7 +7,7 @@ if (process.platform == "win32") {
 }
 let win;
 let pluginName;
-const isDev = false; // Change to false if you want to disable development mode and package the application.
+const isDev = !app.isPackaged; // Change to false if you want to disable development mode and package the application.
 switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
