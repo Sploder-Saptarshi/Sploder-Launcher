@@ -30,8 +30,9 @@
     "appId": "com.sploder",
     "productName": "Sploder",
     "linux": {
-      "target": ["snap"],
-      "category": "Games"
+      "target": ["snap", "AppImage", "deb", "rpm", "pacman"],
+      "category": "Games",
+      "icon": "build/icon.png"
     },
     "mac": {
       "icon": "build/macos.png",
