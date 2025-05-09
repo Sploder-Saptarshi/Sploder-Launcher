@@ -40,16 +40,6 @@ jobs:
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
           run: npm install
 
-        - name: Cache snapcraft
-          if: runner.os == 'Linux'
-          id: snapcraft-cache
-          uses: actions/cache@v3
-          with:
-            path: /var/lib/snapd/snaps
-            key: ${{ runner.os }}-snapcraft-${{ hashFiles('**/snapcraft.yaml') }}
-            restore-keys: |
-              ${{ runner.os }}-snapcraft-
-
         - name: Install Snapcraft
           if: steps.snapcraft-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
           run: |
@@ -93,7 +83,7 @@ jobs:
             name: Windows Installer Files
             path: dist/*.exe
 
-        - name: Upload .zip files
+        - name: Upload Windows .zip files
           if: runner.os == 'Windows'
           uses: actions/upload-artifact@v4
           with:
@@ -135,7 +125,7 @@ jobs:
             name: Linux AppImage Files
             path: dist/*.AppImage
         
-        - name: Upload .zip files
+        - name: Upload Linux .zip files
           if: runner.os == 'Linux'
           uses: actions/upload-artifact@v4
           with:
