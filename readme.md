@@ -20,6 +20,7 @@ Join the [Discord Server](https://discord.gg/cHGz362sdC) for the active communit
 
  - Run `nvm use` to switch to the node version specified in .nvmrc
  - Run `npm i` to install all necessary packages
+ - Run `node addurl.js` and type in the website URL, the launcher is supposed to open. This is a one-time operation that should only be performed if you are not using GitHub actions. 
  - Run `npm run dist` to build the project
  - The built files will be available in the dist folder.
 
