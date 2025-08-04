@@ -40,6 +40,11 @@ jobs:
           if: steps.node-modules-cache.outputs.cache-hit != 'true'
           run: npm install
 
+        - name: Add URL to source files
+          run: node addurl.js --url ${{ secrets.SITE_URL }}
+          env:
+            NODE_OPTIONS: --unhandled-rejections=warn
+
         - name: Install Snapcraft
           if: steps.snapcraft-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
           run: |
