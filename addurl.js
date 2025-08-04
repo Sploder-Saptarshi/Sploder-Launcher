@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -39,53 +38,97 @@ function replaceInFile(filePath, oldString, newUrl) {
 
         const regex = new RegExp(oldString.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
         content = content.replace(regex, newUrl);
+
+        if (content !== originalContent) {
+            fs.writeFileSync(filePath, content, 'utf8');
+        }
     } catch (error) {
         console.error(`Error processing file ${filePath}: ${error.message}`);
     }
 }
 
 
-function main() {
-    console.log('URL must be exactly in this format: https://www.sploder.net');
-    console.log('Make sure to include the protocol (http:// or https://) and do not include a trailing slash.\n');
-    rl.question('Please enter the URL the launcher should open: ', (userUrl) => {
-        if (!userUrl) {
-            console.log('No URL provided. Exiting.');
-            rl.close();
-            return;
-        }
+function isValidUrl(url) {
+    const protocolRegex = /^(http|https):\/\//;
+    const trailingSlashRegex = /\/$/;
+    const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-        console.log(`\nStarting replacement process for files in: ${sourceDirectory}`);
-        console.log(`Replacing '_[[URL]]_' with: '${userUrl}'\n`);
+    if (!protocolRegex.test(url)) {
+        console.error('Error: URL must begin with http:// or https://');
+        return false;
+    }
 
-        try {
+    if (trailingSlashRegex.test(url)) {
+        console.error('Error: URL must not have a trailing slash.');
+        return false;
+    }
 
-            const allFiles = getAllFiles(sourceDirectory);
+    const domain = url.split('//')[1];
+    if (!domainRegex.test(domain)) {
+        console.error('Error: URL must contain a proper domain format (e.g., domain.tld).');
+        return false;
+    }
+
+    return true;
+}
 
 
-            const targetFiles = allFiles.filter(file => {
-                const ext = path.extname(file).toLowerCase();
-                return ext === '.html' || ext === '.js';
+function processFiles(userUrl) {
+    if (!isValidUrl(userUrl)) {
+        rl.close();
+        return;
+    }
+
+    try {
+
+        const allFiles = getAllFiles(sourceDirectory);
+
+
+        const targetFiles = allFiles.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return ext === '.html' || ext === '.js';
+        });
+
+        if (targetFiles.length === 0) {
+            console.log(`No .html or .js files found in '${sourceDirectory}'.`);
+        } else {
+
+            targetFiles.forEach(file => {
+                replaceInFile(file, '_[[URL]]_', userUrl);
             });
-
-            if (targetFiles.length === 0) {
-                console.log(`No .html or .js files found in '${sourceDirectory}'.`);
-            } else {
-
-                targetFiles.forEach(file => {
-                    replaceInFile(file, '_[[URL]]_', userUrl);
-                });
-                console.log('\nReplacement process completed.');
-            }
-        } catch (error) {
-            console.error(`An error occurred: ${error.message}`);
-            if (error.code === 'ENOENT') {
-                console.error(`Please ensure the directory '${sourceDirectory}' exists.`);
-            }
-        } finally {
-            rl.close();
+            console.log('URL added successfully.');
         }
-    });
+    } catch (error) {
+        console.error(`An error occurred: ${error.message}`);
+        if (error.code === 'ENOENT') {
+            console.error(`Please ensure the directory '${sourceDirectory}' exists.`);
+        }
+    } finally {
+        rl.close();
+    }
+}
+
+
+function main() {
+    const args = process.argv.slice(2);
+    const urlArgIndex = args.indexOf('--url');
+    const greenColor = '\x1b[32m';
+    const resetColor = '\x1b[0m';
+    if (urlArgIndex !== -1 && args[urlArgIndex + 1]) {
+        const userUrl = args[urlArgIndex + 1];
+        processFiles(userUrl);
+    } else {
+        console.log(`URL must be exactly in this format: ${greenColor}https://www.sploder.net${resetColor}`);
+        console.log('Make sure to include the protocol (http:// or https://) and do not include a trailing slash.\n');
+        rl.question('Please enter the URL the launcher should open: ', (userUrl) => {
+            if (!userUrl) {
+                console.log('No URL provided. Exiting.');
+                rl.close();
+                return;
+            }
+            processFiles(userUrl);
+        });
+    }
 }
 
 
