@@ -19,7 +19,7 @@ function getRetryParameter() {
   var retryParameterValue = url.searchParams.get('retry');
 
   // Provide a default value if the 'retry' parameter is not present
-    return retryParameterValue !== null ? retryParameterValue : 'https://www.sploder.net/update';
+    return retryParameterValue !== null ? retryParameterValue : '_[[URL]]_/update';
 }
 
 
