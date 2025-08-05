@@ -7,61 +7,128 @@
     <title>Sploder</title>
 </head>
 <script>
-    // Check get parameter to get URL
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const url = urlParams.get('url');
+    // Wait for DOM to be fully loaded before initializing
+    document.addEventListener('DOMContentLoaded', initializeApp);
 
-    // If the URL is not provided, redirect to the update page
-    if (url == null) {
-      window.location.href = "_[[URL]]_/update";
-    }
+    function initializeApp() {
+        // Check get parameter to get URL
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const url = urlParams.get('url');
 
-    var page;
-    var prevpage;
-    var pagestat;
-    // Windows XP theme
-    const { remote } = require('electron');
-    const win = remote.getCurrentWindow();
-    function toggleMaximize() {
-        const maxButton = document.getElementById('max-btn');
-
-      // Check the current aria-label and toggle it
-      if (!win.isMaximized()) {
-        win.maximize();
-        maxButton.setAttribute('aria-label', 'Restore');
-        // Add logic to handle the "Restore" functionality if needed
-      } else {
+        // If the URL is not provided, redirect to the update page
+        if (url == null) {
+            window.location.href = "_[[URL]]_/update";
+        }
         
-        win.unmaximize();
-        maxButton.setAttribute('aria-label', 'Maximize');
-        // Add logic to handle the "Maximize" functionality if needed
+        // Store URL in a global variable for other functions to access
+        window.initialURL = url;
+        
+        var page;
+        var prevpage;
+        var pagestat;
+                
+        // Set up document content
+        document.getElementById("content-frame").setAttribute('src', url);
+        
+        // Initialize the button state
+        checkmax();
+        
+        // Set up additional window state listeners
+        setTimeout(() => {
+            window.addEventListener('resize', () => {
+                setTimeout(checkmax, 50);
+            });
+            
+            // Additional event listener for the title bar
+            const titleBar = document.querySelector('.title-bar');
+            if (titleBar) {
+                titleBar.addEventListener('mouseup', () => setTimeout(checkmax, 50));
+                titleBar.addEventListener('dblclick', () => setTimeout(checkmax, 50));
+            }
+            
+            // Listen for window state changes directly from the main process
+            if (window.electronAPI && window.electronAPI.onWindowStateChange) {
+                window.electronAPI.onWindowStateChange((isMaximized) => {
+                    const maxButton = document.getElementById('max-btn');
+                    if (maxButton) {
+                        maxButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+                    }
+                });
+            }
+        }, 100);
+        
+        // Start the interval functions
+        setInterval(discordrpc, 15000);
+    }
+    
+    // Window control functions using IPC
+    async function toggleMaximize() {
+        try {
+            const maxButton = document.getElementById('max-btn');
+            if (!maxButton) return; // Safety check
+            
+            // Call the maximize function which returns true if window is now maximized
+            const isMaximized = await window.electronAPI.maximizeWindow();
+            
+            // Update button appearance immediately based on the returned state
+            if (isMaximized) {
+                maxButton.setAttribute('aria-label', 'Restore');
+            } else {
+                maxButton.setAttribute('aria-label', 'Maximize');
+            }
+        } catch (error) {
+            console.error('Error in toggleMaximize:', error);
+        }
+    }
+    
+    async function checkmax() {
+        try {
+            const maxButton = document.getElementById('max-btn');
+            if (!maxButton) return; // Safety check
+            
+            // Get the current window state
+            const isMaximized = await window.electronAPI.isWindowMaximized();
+            
+            // Update the button's appearance based on the window state
+            if (isMaximized) {
+                if (maxButton.getAttribute('aria-label') !== 'Restore') {
+                    maxButton.setAttribute('aria-label', 'Restore');
+                }
+            } else {
+                if (maxButton.getAttribute('aria-label') !== 'Maximize') {
+                    maxButton.setAttribute('aria-label', 'Maximize');
+                }
+            }
+        } catch (error) {
+            console.error('Error in checkmax:', error);
+        }
+    }
+    
+    // Run checkmax at a regular interval to keep the button state in sync
+    setInterval(checkmax, 100);
+    
+    // Add event listeners for window state changes
+    window.addEventListener('resize', checkmax);
+    document.addEventListener('mouseup', checkmax);
+    
+    // Keep updating the Discord RPC message
+    var rpcinfo;
+    function discordrpc() {
+      try {
+        rpcinfo = document.getElementById("content-frame").contentWindow.window.rpcinfo;
+      } catch (error) {
+        console.error('Error in discordrpc:', error);
       }
     }
-    function checkmax() {
-        const maxButton = document.getElementById('max-btn');
-
-        if (win.isMaximized()) {
-            maxButton.setAttribute('aria-label', 'Restore');
-        }
-        else {
-            maxButton.setAttribute('aria-label', 'Maximize');
-        }
-}
-var checkmax = setInterval(checkmax, 100);
-// Keep updating the Discord RPC message
-var rpcinfo;
-function discordrpc() {
-  rpcinfo = document.getElementById("content-frame").contentWindow.window.rpcinfo;
-}
-setInterval(discordrpc, 15000);
+    setInterval(discordrpc, 15000);
 // Custom built code to check if user is online.
 // I have no idea how or why this works.
   function online() {
     if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/"){
     page = document.getElementById("content-frame").contentWindow.location.href;
     } else if(page == undefined) {
-      page = url;
+      page = window.initialURL || ''; // Use the stored global URL
     }
     if(page.includes("offline.html")){
       page = "test";
@@ -69,7 +136,7 @@ setInterval(discordrpc, 15000);
 
     
     const frame = document.getElementById('content-frame');
-      var url = "_[[URL]]_/php/ping.php";
+      var pingUrl = "_[[URL]]_/php/ping.php";
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
       
@@ -91,11 +158,20 @@ setInterval(discordrpc, 15000);
         }
         
     };
-    xhttp.open("GET", url, true);
+    xhttp.open("GET", pingUrl, true);
     xhttp.send();
 
   }
   }
+  // Add window focus and blur listeners to check window state
+  window.addEventListener('focus', function() {
+    setTimeout(checkmax, 50);
+  });
+  
+  window.addEventListener('blur', function() {
+    setTimeout(checkmax, 50);
+  });
+  
   // Prevent scrolling using JavaScript
   window.addEventListener('scroll', () => {
     window.scrollTo(0, 0); // Keep the window locked at the top
@@ -136,10 +212,12 @@ setInterval(discordrpc, 15000);
         width: 100%;
         height: 100%;
         display: flex;
+        user-select: none;
         -webkit-user-select: none;
         -webkit-app-region: drag;
     }
     .title-bar-text {
+        user-select: none;
         -webkit-user-select: none;
         -webkit-app-region: drag;
     }
@@ -154,10 +232,12 @@ setInterval(discordrpc, 15000);
       height: 16px;
       margin-left: 3px;
       margin-right: 3px;
+      user-select: none;
       -webkit-user-select: none;
       -webkit-app-region: drag;
     }
     .candrag {
+      user-select: none;
       -webkit-user-select: none;
       -webkit-app-region: drag;
     }
@@ -165,23 +245,21 @@ setInterval(discordrpc, 15000);
 <body>
   
     <div class="window" style="width: 100%; height: calc(100% - 3px)">
-        <div class="title-bar">
+        <div class="title-bar" id="titlebar">
           <img class="title-bar-icon" src="images/icon.png">
           <div class="title-bar-text">Sploder</div>
-          <div class="titlebar-movable"></div>
+          <div class="titlebar-movable" onmouseup="setTimeout(checkmax, 50)" onmousedown="setTimeout(checkmax, 500)"></div>
           <div class="title-bar-controls">
-            <button id="min-btn" onclick="win.minimize()" aria-label="Minimize"></button>
+            <button id="min-btn" onclick="window.electronAPI.minimizeWindow()" aria-label="Minimize"></button>
             <button id="max-btn" onclick="toggleMaximize()" aria-label="Maximize"></button>
-            <button id="close-btn" onclick="win.close()" aria-label="Close"></button>
+            <button id="close-btn" onclick="window.electronAPI.closeWindow()" aria-label="Close"></button>
           </div>
         </div>
         <div class="window-body"
           style="width: 100%; height: calc(100% - 50px); margin-left: 3px; margin-top:0px; padding-bottom: -50px;">
           <iframe id="content-frame" onload="online();" src="">
             </iframe>
-          <script>
-            document.getElementById("content-frame").setAttribute('src', url);
-          </script>
+          <!-- The src will be set by initializeApp function -->
            
         </div>
       </div>

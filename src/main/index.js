@@ -1,5 +1,13 @@
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
+const url = require("url");
+
+// Helper function to create proper file URLs
+function pathToFileURL(filePath) {
+  const formattedPath = path.resolve(filePath).replace(/\\/g, '/');
+  return `file:///${formattedPath}`;
+}
+
 // If not on windows, disable RPC
 let DiscordRPC;
 if (process.platform == "win32") {
@@ -8,6 +16,11 @@ if (process.platform == "win32") {
 let win;
 let pluginName;
 const isDev = !app.isPackaged; // Change to false if you want to disable development mode and package the application.
+
+// Define paths
+const rendererPath = path.resolve(path.join(__dirname, '../renderer'));
+const preloadPath = path.resolve(path.join(rendererPath, 'preload.js'));
+const localPath = path.resolve(path.join(__dirname, '../local'));
 switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
@@ -44,13 +57,16 @@ function createWindow() {
     minHeight: 320,
     show: false, // Initially hide the new window
     webPreferences: {
-      // Who cares about security?
-      // I'll surely have to address this sometime soon though.
-      enableRemoteModule: true,
-      nodeIntegration: true,  
-      devTools: true,
+      // Improve security by disabling remote module
+      enableRemoteModule: false, // Disable remote module
+      nodeIntegration: false,  // Disable node integration
+      contextIsolation: true, // Enable context isolation
+      preload: preloadPath, // Use the verified absolute path
+      devTools: isDev,
       // Must be enabled to allow flash to run.
       plugins: true,
+      // Security settings
+      sandbox: false // Disable sandbox to ensure preload script runs
     },
     
   }
@@ -117,15 +133,30 @@ function createWindow() {
     win.openDevTools();
   }
   // Load the custom Windows XP titlebar.
+  let startHtmlPath;
   if(isDev){
-    startpath = "/../../src/local/start.html?url="
+    startHtmlPath = path.resolve(path.join(__dirname, '..', 'local', 'start.html'));
   } else {
-    startpath = "/../../resources/src/local/start.html?url="
+    startHtmlPath = path.resolve(path.join(app.getAppPath(), 'resources', 'src', 'local', 'start.html'));
   }
-  win.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + "_[[URL]]_/update");
+  
+  // Load the URL with proper file protocol
+  const startUrl = `${pathToFileURL(startHtmlPath)}?url=_[[URL]]_/update`;
+  win.loadURL(startUrl);
+  
   win.webContents.on('did-finish-load', () => {
     win.show();
   });
+  
+  // Add listeners for window state changes
+  win.on('maximize', () => {
+    win.webContents.send('window-state-change', true);
+  });
+  
+  win.on('unmaximize', () => {
+    win.webContents.send('window-state-change', false);
+  });
+  
   win.webContents.on('new-window', (event, url) => {
     if (url.includes("/make/publish.php?s=") || url.includes("&inLauncher=1")) {
       // Internally handle the new window by creating a popup window
@@ -140,14 +171,21 @@ function createWindow() {
         frame: false,
         show: false, // Initially hide the new window
         webPreferences: {
-          nodeIntegration: true,
-          enableRemoteModule: true,
-          nodeIntegration: true,
+          enableRemoteModule: false,
+          nodeIntegration: false,
+          contextIsolation: true,
+          preload: preloadPath, // Use the verified absolute path
           plugins: true,
+          sandbox: false // Disable sandbox to ensure preload script runs
         },
       });
       win.newwin.setMenu(null);
-      win.newwin.loadURL("file:///" + app.getAppPath().replace(/\\/g, '/') + startpath + url);
+      
+      // Use the helper function to create a proper file URL
+      const fileURL = pathToFileURL(startHtmlPath);
+      const popupUrl = `${fileURL}?url=${url}`;
+      
+      win.newwin.loadURL(popupUrl);
       win.newwin.webContents.on('did-finish-load', () => {
         win.newwin.show();
       });
@@ -205,3 +243,65 @@ if (process.platform == "win32") {
 
   rpc.login({ clientId }).catch();
 }
+
+// Set up IPC handlers for window control
+ipcMain.handle('window-minimize', (event) => {
+  // Find the BrowserWindow that the request is coming from
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    browserWindow.minimize();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('window-maximize', (event) => {
+  // Find the BrowserWindow that the request is coming from
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    if (browserWindow.isMaximized()) {
+      browserWindow.unmaximize();
+      return false;
+    } else {
+      browserWindow.maximize();
+      return true;
+    }
+  }
+  return false;
+});
+
+ipcMain.handle('window-close', (event) => {
+  // Find the BrowserWindow that the request is coming from
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    browserWindow.close();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('window-is-maximized', (event) => {
+  // Find the BrowserWindow that the request is coming from
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    return browserWindow.isMaximized();
+  }
+  return false;
+});
+
+ipcMain.handle('get-rpc-info', async (event) => {
+  if (!win) return '';
+  try {
+    return await win.webContents.executeJavaScript('rpcinfo');
+  } catch (error) {
+    return '';
+  }
+});
