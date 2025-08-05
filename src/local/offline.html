@@ -8,7 +8,7 @@
         <style>*{margin:0;padding:0}html,body{width:100%;height:100%}body{margin:0;background-color:#32103C;font-family:"Helvetica Neue",Helvetica,Arial,Sans-serif;color:#fff}img{display:block}img.icon{z-index:-1;margin:-40px 0}img.logo{position:relative;z-index:1000}a{color:#ea0}h1,h2{color:#fff;margin-bottom:.25em}p{color:#ccc}table{height:100%;padding:20px}td.announce{margin-top:25%}div.cloudflare_logo{margin:10px 20px}ul{margin-top:20px;width:75%;background-color:#000;padding:20px;border-radius:10px}ul li{font-size:.8em;text-align:left;list-style-type:none}ul li p{color:#666}p.cferror_msg{padding-left:10%;padding-right:10%}</style>
         <script type="text/javascript">
 // All hail GitHub Copilot!!
-function getRetryParameter() {
+async function getRetryParameter() {
   // Get the current URL
   var currentUrl = window.location.href;
 
@@ -18,8 +18,19 @@ function getRetryParameter() {
   // Get the value of the 'retry' parameter
   var retryParameterValue = url.searchParams.get('retry');
 
-  // Provide a default value if the 'retry' parameter is not present
-    return retryParameterValue !== null ? retryParameterValue : '_[[URL]]_/update';
+  // If the retry parameter is provided, use it, otherwise get the update URL from the config
+  if (retryParameterValue !== null) {
+    return retryParameterValue;
+  } else {
+    try {
+      // Get the update URL from the main process
+      return await window.electronAPI.getUrl('update');
+    } catch (error) {
+      console.error('Error getting update URL:', error);
+      // Fallback to hardcoded URL in case of error
+      return 'https://sploder.com/update';
+    }
+  }
 }
 
 
@@ -45,9 +56,13 @@ function getRetryParameter() {
     function retry(){
         retried = true;
     }
-    const btn = document.getElementById('retrybtn');
-btn.setAttribute('href', getRetryParameter());
-
+    
+    // Set up the retry button href when the document is loaded
+    document.addEventListener('DOMContentLoaded', async function() {
+        const btn = document.getElementById('retrybtn');
+        const retryUrl = await getRetryParameter();
+        btn.setAttribute('href', retryUrl);
+    });
 </script>
 
 </div>

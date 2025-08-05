@@ -2,6 +2,9 @@ const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 
+// Import centralized configuration
+const { config } = require("../config");
+
 // Helper function to create proper file URLs
 function pathToFileURL(filePath) {
   const formattedPath = path.resolve(filePath).replace(/\\/g, '/');
@@ -140,8 +143,8 @@ function createWindow() {
     startHtmlPath = path.resolve(path.join(app.getAppPath(), 'resources', 'src', 'local', 'start.html'));
   }
   
-  // Load the URL with proper file protocol
-  const startUrl = `${pathToFileURL(startHtmlPath)}?url=_[[URL]]_/update`;
+  // Load the URL with proper file protocol and use the config for the initial URL
+  const startUrl = `${pathToFileURL(startHtmlPath)}?url=${config.getUrl('update')}`;
   win.loadURL(startUrl);
   
   win.webContents.on('did-finish-load', () => {
@@ -304,4 +307,14 @@ ipcMain.handle('get-rpc-info', async (event) => {
   } catch (error) {
     return '';
   }
+});
+
+// Handler to provide application configuration to the renderer
+ipcMain.handle('get-config', (event) => {
+  return config;
+});
+
+// Handler to get a specific URL
+ipcMain.handle('get-url', (event, endpoint) => {
+  return config.getUrl(endpoint);
 });

@@ -10,7 +10,7 @@
     // Wait for DOM to be fully loaded before initializing
     document.addEventListener('DOMContentLoaded', initializeApp);
 
-    function initializeApp() {
+    async function initializeApp() {
         // Check get parameter to get URL
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -18,7 +18,14 @@
 
         // If the URL is not provided, redirect to the update page
         if (url == null) {
-            window.location.href = "_[[URL]]_/update";
+            try {
+                const updateUrl = await window.electronAPI.getUrl('update');
+                window.location.href = updateUrl;
+            } catch (error) {
+                console.error('Error getting update URL:', error);
+                // Fallback to hardcoded URL in case of error
+                window.location.href = "https://sploder.com/update";
+            }
         }
         
         // Store URL in a global variable for other functions to access
@@ -124,7 +131,7 @@
     setInterval(discordrpc, 15000);
 // Custom built code to check if user is online.
 // I have no idea how or why this works.
-  function online() {
+  async function online() {
     if(document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/"){
     page = document.getElementById("content-frame").contentWindow.location.href;
     } else if(page == undefined) {
@@ -136,9 +143,10 @@
 
     
     const frame = document.getElementById('content-frame');
-      var pingUrl = "_[[URL]]_/php/ping.php";
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
+    try {
+      var pingUrl = await window.electronAPI.getUrl('ping');
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
       
         if (this.readyState == 4 && this.status != 200 && frame.getAttribute('src') != "offline.html?retry="+page) {
           if(page != "test") {
@@ -160,7 +168,9 @@
     };
     xhttp.open("GET", pingUrl, true);
     xhttp.send();
-
+    } catch (error) {
+      console.error('Error getting ping URL:', error);
+    }
   }
   }
   // Add window focus and blur listeners to check window state

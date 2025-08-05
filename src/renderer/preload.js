@@ -11,5 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('window-state-change', (_, isMaximized) => {
       callback(isMaximized);
     });
-  }
+  },
+  // Configuration API
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  getUrl: (endpoint) => ipcRenderer.invoke('get-url', endpoint)
 });
