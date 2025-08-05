@@ -22,6 +22,7 @@ Join the [Discord Server](https://discord.gg/cHGz362sdC) for the active communit
  - Run `npm i` to install all necessary packages
  - Run `node addurl.js` and type in the website URL, the launcher is supposed to open. This is a one-time operation that should only be performed if you are not using GitHub Actions. See [Configure GitHub Actions](#configure-github-actions) if using GitHub Actions
  - Run `npm run dist` to build the project
+   - You can specify a custom URL with `npm run dist -- --url https://your-custom-url.com`
  - The built files will be available in the dist folder.
 
 ### Steps to Debug
