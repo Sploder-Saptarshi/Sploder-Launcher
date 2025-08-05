@@ -51,6 +51,7 @@ if(isDev){
 } else {
   flashpath = path.join(path.dirname(app.getAppPath()), 'plugins', pluginName);
 }
+// This is necessary because there is something wrong with Linux that prevents flash from running when a sandbox is present.
 if (process.platform === "linux") app.commandLine.appendSwitch("no-sandbox");
 app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
 app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
@@ -73,8 +74,6 @@ function createWindow() {
       devTools: isDev,
       // Must be enabled to allow flash to run.
       plugins: true,
-      // Security settings
-      sandbox: false // Disable sandbox to ensure preload script runs
     },
     
   }
@@ -184,7 +183,6 @@ function createWindow() {
           contextIsolation: true,
           preload: preloadPath, // Use the verified absolute path
           plugins: true,
-          sandbox: false // Disable sandbox to ensure preload script runs
         },
       });
       win.newwin.setMenu(null);
