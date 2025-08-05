@@ -18,12 +18,16 @@ if (process.platform == "win32") {
 }
 let win;
 let pluginName;
-const isDev = !app.isPackaged; // Change to false if you want to disable development mode and package the application.
+const isDev = !app.isPackaged;
 
-// Define paths
-const rendererPath = path.resolve(path.join(__dirname, '../renderer'));
-const preloadPath = path.resolve(path.join(rendererPath, 'preload.js'));
-const localPath = path.resolve(path.join(__dirname, '../local'));
+let rendererPath, preloadPath;
+if(isDev) {
+  rendererPath = path.resolve(path.join(__dirname, '../renderer'));
+  preloadPath = path.resolve(path.join(rendererPath, 'preload.js'));
+} else {
+  rendererPath = path.join(path.dirname(app.getAppPath()), 'src', 'renderer');
+  preloadPath = path.join(rendererPath, 'preload.js');
+}
 switch (process.platform) {
   case "win32":
     pluginName = process.arch == 'x64' ? 'x64/pepflashplayer.dll' : 'x32/pepflashplayer32.dll';
@@ -41,10 +45,11 @@ switch (process.platform) {
     break;
 }
 
+let flashpath;
 if(isDev){
-  flashpath = path.join("../../../plugins/", pluginName)
+  flashpath = path.join("../../../plugins/", pluginName);
 } else {
-  flashpath = path.join(__dirname + "/../plugins/", pluginName)
+  flashpath = path.join(path.dirname(app.getAppPath()), 'plugins', pluginName);
 }
 if (process.platform === "linux") app.commandLine.appendSwitch("no-sandbox");
 app.commandLine.appendSwitch("ppapi-flash-path", flashpath);
@@ -140,8 +145,8 @@ function createWindow() {
   if(isDev){
     startHtmlPath = path.resolve(path.join(__dirname, '..', 'local', 'start.html'));
   } else {
-    startHtmlPath = path.resolve(path.join(app.getAppPath(), 'resources', 'src', 'local', 'start.html'));
-  }
+    startHtmlPath = path.join(path.dirname(app.getAppPath()), 'src', 'local', 'start.html');
+  }  
   
   // Load the URL with proper file protocol and use the config for the initial URL
   const startUrl = `${pathToFileURL(startHtmlPath)}?url=${config.getUrl('update')}`;
