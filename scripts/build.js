@@ -130,7 +130,7 @@ try {
         }
         
         // Create zip file using native zip command with maximum compression
-        execSync(`cd "${distPath}" && zip -0 -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
+        execSync(`cd "${distPath}" && zip -9 -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
         
         // Check and log the final zip file size
         if (fs.existsSync(zipFilePath)) {
