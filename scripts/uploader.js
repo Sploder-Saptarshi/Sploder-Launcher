@@ -99,43 +99,49 @@ function makeRequest(url, options, data) {
 }
 
 /**
- * Upload a single chunk
+ * Upload a single chunk using multipart/form-data with raw binary data
  */
 async function uploadChunk(filePath, fileName, chunkIndex, chunkData, totalChunks, fileHash) {
-  // Create form data for application/x-www-form-urlencoded
+  // Create multipart form data with raw binary data (more efficient than base64)
+  const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15);
+  
   const formFields = {
     'api_key': API_KEY,
     'file_name': fileName,
     'chunk_index': chunkIndex.toString(),
     'total_chunks': totalChunks.toString(),
-    'file_hash': fileHash,
-    'chunk_data': chunkData.toString('base64')
+    'file_hash': fileHash
   };
   
-  // Validate all required fields
-  const requiredFields = ['api_key', 'file_name', 'chunk_index', 'total_chunks', 'file_hash', 'chunk_data'];
-  for (const field of requiredFields) {
-    if (!formFields[field] || formFields[field] === '') {
-      throw new Error(`Missing or empty field: ${field}`);
-    }
-  }
+  // Build multipart form data manually
+  let formData = Buffer.alloc(0);
   
-  // Create URLSearchParams for proper form encoding
-  const formData = new URLSearchParams();
+  // Add text fields
   for (const [key, value] of Object.entries(formFields)) {
-    formData.append(key, value);
+    const fieldHeader = `--${boundary}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${value}\r\n`;
+    formData = Buffer.concat([formData, Buffer.from(fieldHeader)]);
   }
   
-  const formDataString = formData.toString();
-  console.log(`Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);
+  // Add binary chunk data
+  const binaryHeader = `--${boundary}\r\nContent-Disposition: form-data; name="chunk_data"; filename="chunk_${chunkIndex}"\r\nContent-Type: application/octet-stream\r\n\r\n`;
+  const binaryFooter = `\r\n--${boundary}--\r\n`;
+  
+  formData = Buffer.concat([
+    formData,
+    Buffer.from(binaryHeader),
+    chunkData,
+    Buffer.from(binaryFooter)
+  ]);
+  
+  console.log(`📦 Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);
   
   const response = await makeRequest(UPLOAD_ENDPOINT, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(formDataString)
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      'Content-Length': formData.length
     }
-  }, formDataString);
+  }, formData);
   
   if (response.status !== 200) {
     throw new Error(`HTTP ${response.status}: ${JSON.stringify(response.data)}`);
@@ -210,12 +216,12 @@ function findFilesToUpload(directory) {
         files.push({ path: fullPath, type: 'macos-app' });
       }
     } else if (item.isDirectory()) {
-      // macOS app files (in mac/ directory)
+      // macOS app files (in mac/ directory) - only add if zip doesn't already exist
       if (item.name === 'mac') {
-        // Zip the entire mac directory for upload
         const macZipPath = path.join(directory, 'Sploder-macOS.zip');
         if (fs.existsSync(macZipPath)) {
-          files.push({ path: macZipPath, type: 'macos-app' });
+          // Zip file already exists, don't add the directory
+          console.log(`📝 Note: Using existing ${macZipPath} instead of mac directory`);
         } else {
           console.log(`📝 Note: macOS app directory found but no zip file. Consider creating ${macZipPath}`);
         }
