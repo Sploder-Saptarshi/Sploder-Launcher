@@ -4,10 +4,16 @@
  */
 
 // Create configuration factory function
-function createConfig(isDev = false) {
+function createConfig(isDev = false, buildConfig = {}) {
   return {
     // Base URL for the application
     baseUrl: "https://www.sploder.net",
+    
+    // Build-time configuration
+    build: {
+      packagingMethod: buildConfig.packagingMethod || 'portable', // 'portable' or 'installed'
+      ...buildConfig
+    },
     
     // Specific endpoints
     endpoints: {
@@ -17,7 +23,27 @@ function createConfig(isDev = false) {
     
     // Generate a full URL for an endpoint
     getUrl: function(endpoint) {
-      return this.baseUrl + (this.endpoints[endpoint] || endpoint);
+      const baseUrl = this.baseUrl + (this.endpoints[endpoint] || endpoint);
+      
+      // Add parameters for update endpoint
+      if (endpoint === 'update') {
+        const params = new URLSearchParams();
+        
+        // Add OS information
+        params.append('os', process.platform);
+        
+        // Add architecture information
+        params.append('arch', process.arch);
+        
+        // Add packaging method from build configuration (Windows only)
+        if (process.platform === 'win32') {
+          params.append('method', this.build.packagingMethod);
+        }
+        
+        return `${baseUrl}?${params.toString()}`;
+      }
+      
+      return baseUrl;
     }
   };
 }

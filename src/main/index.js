@@ -18,10 +18,15 @@ if (process.platform == "win32") {
 }
 let win;
 let pluginName;
+// Injected build configuration
+const BUILD_CONFIG = {"packagingMethod":"installed"};
+
 const isDev = !app.isPackaged;
 
-// Create configuration with proper isDev detection
-const config = createConfig(isDev);
+// Create configuration with proper isDev detection and build config
+// BUILD_CONFIG will be replaced during build process
+const buildConfig = typeof BUILD_CONFIG !== 'undefined' ? BUILD_CONFIG : {};
+const config = createConfig(isDev, buildConfig);
 
 let rendererPath, preloadPath;
 if(isDev) {

@@ -62,12 +62,12 @@ jobs:
             restore-keys: |
               ${{ runner.os }}-electron-
 
-        - name: Run build script
+        - name: Run build script for installers
           run: npx yarn dist -- --url ${{ secrets.SITE_URL }}
 
-        - name: Zip portable builds
+        - name: Run build script for portable
           if: runner.os == 'Windows'
-          run: Compress-Archive -Path .\dist\win-unpacked\* -DestinationPath .\dist\Sploder-Portable-x64.zip && Compress-Archive -Path .\dist\win-ia32-unpacked\* -DestinationPath .\dist\Sploder-Portable-ia32.zip
+          run: npx yarn dist -- --url ${{ secrets.SITE_URL }} --portable
 
         - name: Upload .exe files
           if: runner.os == 'Windows'

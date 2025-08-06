@@ -25,7 +25,16 @@
     "yarn": "1.22.22"
   },
   "build": {
-    "asar": true, "files": [ "./dist/main/*" ], "win": {},
+    "asar": true, 
+    "files": [ "./dist/main/*" ], 
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ]
+    },
     "publish": null,
     "appId": "com.sploder",
     "productName": "Sploder",
