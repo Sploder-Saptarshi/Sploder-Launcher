@@ -30,22 +30,20 @@ function createConfig(isDev = false, buildConfig = {}) {
       // Add parameters for update endpoint
       if (endpoint === 'update') {
         const params = new URLSearchParams();
-        systemInfo = '';
         // Add OS information
         platform = process.platform || 'unknown';
-        systemInfo += platform;
+        var systemInfo = platform;
         
         // Add architecture information (ensure it's not undefined)
         const arch = process.arch || 'unknown';
-        arch = process.arch || 'unknown';
-        systeminfo += `-${arch}`;
+        systemInfo += `-${arch}`;
                 
         if (process.platform === 'win32' && this.build && this.build.packagingMethod) {
           method = this.build.packagingMethod || 'installed';
           systemInfo += `-${method}`;
         }
-
         params.append('info', systemInfo);
+        const finalUrl = `${baseUrl}?${params.toString()}`;
                 
         return finalUrl;
       }
