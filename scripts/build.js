@@ -97,9 +97,9 @@ try {
     
     // Build only portable versions
     if (process.platform === 'win32') {
-      execSync(`npx yarn electron-builder --win zip --ia32 --x64 -c.win.artifactName="Sploder-${version}-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
+      execSync(`npx yarn electron-builder --win zip --ia32 --x64 -c.win.artifactName="Sploder-Portable-${version}-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
     } else if (process.platform === 'darwin') {
-      execSync(`electron-builder --mac zip --x64 -c.mac.artifactName="Sploder-${version}-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
+      execSync(`electron-builder --mac zip --x64 -c.mac.artifactName="Sploder-Portable-${version}-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
     } else {
       // For Linux, we'll use the unpacked directory as "portable"
       execSync(`electron-builder --linux dir ${filteredArgs}`, { stdio: 'inherit' });
