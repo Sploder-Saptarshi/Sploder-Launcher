@@ -1,6 +1,5 @@
 const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
-const url = require("url");
 
 // Import centralized configuration
 const { createConfig } = require("../config");
