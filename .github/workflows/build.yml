@@ -139,14 +139,56 @@ jobs:
             name: Linux Portable Files
             path: dist/linux-unpacked
 
+        - name: Get package version
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
+          id: package-version
+          run: |
+            VERSION=$(node -p "require('./package.json').version")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+
         - name: Update version on server
           if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
           run: |
-            VERSION=$(node -p "require('./package.json').version")
             curl -X POST "${{ secrets.SITE_URL }}/update/upload.php" \
               -F "api_key=${{ secrets.UPLOAD_API_KEY }}" \
               -F "request_type=update_version" \
-              -F "version=$VERSION"
+              -F "version=${{ steps.package-version.outputs.version }}"
           env:
             UPLOAD_URL: ${{ secrets.SITE_URL }}
             UPLOAD_API_KEY: ${{ secrets.UPLOAD_API_KEY }}
+
+        - name: Create GitHub Release
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: v${{ steps.package-version.outputs.version }}
+            name: Sploder Launcher v${{ steps.package-version.outputs.version }}
+            body: |
+              **Windows Builds:**
+              - Sploder-Setup-${{ steps.package-version.outputs.version }}.exe - Universal build for Windows
+              - Sploder-Setup-${{ steps.package-version.outputs.version }}-ia32.exe - 32-bit build for Windows  
+              - Sploder-Setup-${{ steps.package-version.outputs.version }}-x64.exe - 64-bit build for Windows
+              - Sploder-Portable-ia32.zip - 32-bit portable build for Windows
+              - Sploder-Portable-x64.zip - 64-bit portable build for Windows
+              
+              **macOS Builds:**
+              - Sploder-macOS-${{ steps.package-version.outputs.version }}.zip - macOS build
+              
+              **Linux Builds:**
+              - Sploder-${{ steps.package-version.outputs.version }}.snap - Snap package for Linux
+              - Sploder-${{ steps.package-version.outputs.version }}.deb - Debian package for Linux
+              - Sploder-${{ steps.package-version.outputs.version }}.rpm - RPM package for Linux
+              - Sploder-${{ steps.package-version.outputs.version }}.pacman - Pacman package for Linux
+              - Sploder-${{ steps.package-version.outputs.version }}.AppImage - AppImage for Linux
+            files: |
+              dist/*.exe
+              dist/*.zip
+              dist/*.snap
+              dist/*.deb
+              dist/*.rpm
+              dist/*.pacman
+              dist/*.AppImage
+            draft: false
+            prerelease: false
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
