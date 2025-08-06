@@ -129,8 +129,16 @@ try {
           console.log('\x1b[33mRemoved existing zip file\x1b[0m');
         }
         
-        // Create zip file using native zip command
-        execSync(`cd "${distPath}" && zip -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
+        // Create zip file using native zip command with maximum compression
+        execSync(`cd "${distPath}" && zip -0 -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
+        
+        // Check and log the final zip file size
+        if (fs.existsSync(zipFilePath)) {
+          const zipStats = fs.statSync(zipFilePath);
+          const zipSizeMB = (zipStats.size / 1024 / 1024).toFixed(2);
+          console.log(`📏 Final zip file size: ${zipSizeMB}MB`);
+        }
+        
         console.log(`\x1b[32mmacOS zip file created: ${zipFilePath}\x1b[0m`);
       } else {
         console.log('\x1b[33mWarning: macOS .app directory not found, skipping zip creation\x1b[0m');

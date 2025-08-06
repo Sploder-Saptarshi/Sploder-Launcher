@@ -1,6 +1,16 @@
 /**
  * Chunked file uploader for Sploder-Launcher builds
- * Uploads build artifacts in 90MB chunks with API key authentication
+ * Uploads build artifacts in 90MB chunks with API key   // Create URLSearchParams for proper form encoding
+  const formPairs = [];
+  for (const [key, value] of Object.entries(formFields)) {
+    formPairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+  }
+  
+  const formDataString = formPairs.join('&');
+  
+  // Debug: Show first part of form data to verify structure
+  console.log(`🔧 Form data preview: ${formDataString.substring(0, 200)}...`);
+  console.log(`📦 Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);cation
  */
 
 const fs = require('fs');
@@ -17,6 +27,8 @@ if (!API_KEY) {
   console.error('❌ UPLOAD_API_KEY environment variable is required');
   process.exit(1);
 }
+
+console.log(`🔑 API Key loaded: ${API_KEY.substring(0, 8)}...${API_KEY.substring(API_KEY.length - 4)}`);
 
 if (!process.env.UPLOAD_URL) {
   console.error('❌ UPLOAD_URL environment variable is required');
@@ -90,24 +102,47 @@ function makeRequest(url, options, data) {
  * Upload a single chunk
  */
 async function uploadChunk(filePath, fileName, chunkIndex, chunkData, totalChunks, fileHash) {
+  // Create form data for application/x-www-form-urlencoded
+  const formFields = {
+    'api_key': API_KEY,
+    'file_name': fileName,
+    'chunk_index': chunkIndex.toString(),
+    'total_chunks': totalChunks.toString(),
+    'file_hash': fileHash,
+    'chunk_data': chunkData.toString('base64')
+  };
+  
+  // Validate all required fields
+  const requiredFields = ['api_key', 'file_name', 'chunk_index', 'total_chunks', 'file_hash', 'chunk_data'];
+  for (const field of requiredFields) {
+    if (!formFields[field] || formFields[field] === '') {
+      throw new Error(`Missing or empty field: ${field}`);
+    }
+  }
+  
+  // Create URLSearchParams for proper form encoding
   const formData = new URLSearchParams();
-  formData.append('api_key', API_KEY);
-  formData.append('file_name', fileName);
-  formData.append('chunk_index', chunkIndex.toString());
-  formData.append('total_chunks', totalChunks.toString());
-  formData.append('file_hash', fileHash);
-  formData.append('chunk_data', chunkData.toString('base64'));
+  for (const [key, value] of Object.entries(formFields)) {
+    formData.append(key, value);
+  }
+  
+  const formDataString = formData.toString();
+  console.log(`Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);
   
   const response = await makeRequest(UPLOAD_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(formData.toString())
+      'Content-Length': Buffer.byteLength(formDataString)
     }
-  }, formData.toString());
+  }, formDataString);
   
-  if (response.status !== 200 || !response.data.success) {
-    throw new Error(`Upload failed for chunk ${chunkIndex}: ${JSON.stringify(response.data)}`);
+  if (response.status !== 200) {
+    throw new Error(`HTTP ${response.status}: ${JSON.stringify(response.data)}`);
+  }
+  
+  if (!response.data.success) {
+    throw new Error(`Server error: ${JSON.stringify(response.data)}`);
   }
   
   return response.data;
@@ -169,6 +204,10 @@ function findFilesToUpload(directory) {
       // Windows portable files (.zip)
       else if (item.name.endsWith('.zip') && item.name.includes('Portable')) {
         files.push({ path: fullPath, type: 'windows-portable' });
+      }
+      // macOS zip file (direct file)
+      else if (item.name === 'Sploder-macOS.zip') {
+        files.push({ path: fullPath, type: 'macos-app' });
       }
     } else if (item.isDirectory()) {
       // macOS app files (in mac/ directory)
