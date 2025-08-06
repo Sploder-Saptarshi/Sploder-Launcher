@@ -72,7 +72,7 @@ jobs:
         - name: Upload build artifacts to server
           run: node scripts/uploader.js --dir=dist
           env:
-            UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+            UPLOAD_URL: ${{ secrets.SITE_URL }}
             UPLOAD_API_KEY: ${{ secrets.UPLOAD_API_KEY }}
 
         - name: Upload .exe files
