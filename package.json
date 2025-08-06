@@ -50,7 +50,7 @@
     },
     "extraResources": [
       "./plugins/**",
-      "./src/local/**",
+      "./local/**",
       "./src/renderer/preload.js"
     ]
   }

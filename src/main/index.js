@@ -145,9 +145,9 @@ function createWindow() {
   // Load the custom Windows XP titlebar.
   let startHtmlPath;
   if(isDev){
-    startHtmlPath = path.resolve(path.join(__dirname, '..', 'local', 'start.html'));
+    startHtmlPath = path.resolve(path.join(__dirname, '..', '..', 'local', 'start.html'));
   } else {
-    startHtmlPath = path.join(path.dirname(app.getAppPath()), 'src', 'local', 'start.html');
+    startHtmlPath = path.join(path.dirname(app.getAppPath()), '..', 'local', 'start.html');
   }  
   
   // Load the URL with proper file protocol and use the config for the initial URL
