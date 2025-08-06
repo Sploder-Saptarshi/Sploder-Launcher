@@ -9,9 +9,11 @@ const { createConfig } = require("../config");
 let buildConfig = {};
 try {
   buildConfig = require("./build-config");
+  console.log('[MAIN] Successfully loaded build config:', JSON.stringify(buildConfig, null, 2));
 } catch (error) {
   // build-config.js doesn't exist, use empty config (development mode)
   buildConfig = {};
+  console.log('[MAIN] Build config file not found, using empty config (development mode)');
 }
 
 // Helper function to create proper file URLs
@@ -31,6 +33,7 @@ const isDev = !app.isPackaged;
 
 // Create configuration with proper isDev detection and build config
 const config = createConfig(isDev, buildConfig);
+console.log('[MAIN] Created config with isDev:', isDev, 'buildConfig:', JSON.stringify(buildConfig, null, 2));
 
 let rendererPath, preloadPath;
 if(isDev) {

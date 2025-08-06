@@ -30,17 +30,38 @@ function createConfig(isDev = false, buildConfig = {}) {
         const params = new URLSearchParams();
         
         // Add OS information
+        console.log('[CONFIG] Adding OS parameter:', process.platform);
         params.append('os', process.platform);
-        // Add packaging method from build configuration (Windows only)
-        if (process.platform === 'win32' && this.build && this.build.packagingMethod) {
-          params.append('method', this.build.packagingMethod);
-        }
-
+        
         // Add architecture information (ensure it's not undefined)
         const arch = process.arch || 'unknown';
+        console.log('[CONFIG] Adding ARCH parameter:', arch);
         params.append('arch', arch);
         
-        return `${baseUrl}?${params.toString()}`;
+        // Add packaging method from build configuration (Windows only)
+        console.log('[CONFIG] Platform check:', process.platform);
+        console.log('[CONFIG] Build config:', JSON.stringify(this.build, null, 2));
+        
+        if (process.platform === 'win32' && this.build && this.build.packagingMethod) {
+          console.log('[CONFIG] Adding METHOD parameter:', this.build.packagingMethod);
+          params.append('method', this.build.packagingMethod);
+        } else {
+          console.log('[CONFIG] METHOD parameter NOT added. Reasons:');
+          console.log('  - Platform is Windows:', process.platform === 'win32');
+          console.log('  - Build config exists:', !!this.build);
+          console.log('  - Packaging method exists:', !!(this.build && this.build.packagingMethod));
+        }
+        
+        // Log all parameters before creating URL
+        console.log('[CONFIG] All URL parameters:');
+        for (const [key, value] of params) {
+          console.log(`  ${key} = ${value}`);
+        }
+        
+        const finalUrl = `${baseUrl}?${params.toString()}`;
+        console.log('[CONFIG] Final generated URL:', finalUrl);
+        
+        return finalUrl;
       }
       
       return baseUrl;
