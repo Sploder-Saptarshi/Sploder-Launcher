@@ -1,16 +1,6 @@
 /**
  * Chunked file uploader for Sploder-Launcher builds
- * Uploads build artifacts in 90MB chunks with API key   // Create URLSearchParams for proper form encoding
-  const formPairs = [];
-  for (const [key, value] of Object.entries(formFields)) {
-    formPairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-  }
-  
-  const formDataString = formPairs.join('&');
-  
-  // Debug: Show first part of form data to verify structure
-  console.log(`🔧 Form data preview: ${formDataString.substring(0, 200)}...`);
-  console.log(`📦 Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);cation
+ * Uploads build artifacts in 90MB chunks with API key authentication
  */
 
 const fs = require('fs');
@@ -22,29 +12,28 @@ const { createHash } = require('crypto');
 // Configuration
 const CHUNK_SIZE = 90 * 1024 * 1024; // 90MB chunks
 const API_KEY = process.env.UPLOAD_API_KEY;
+const UPLOAD_URL = process.env.UPLOAD_URL;
 
+// Validate environment
 if (!API_KEY) {
   console.error('❌ UPLOAD_API_KEY environment variable is required');
   process.exit(1);
 }
 
-console.log(`🔑 API Key loaded: ${API_KEY.substring(0, 8)}...${API_KEY.substring(API_KEY.length - 4)}`);
-
-if (!process.env.UPLOAD_URL) {
+if (!UPLOAD_URL) {
   console.error('❌ UPLOAD_URL environment variable is required');
   process.exit(1);
 }
 
-const UPLOAD_ENDPOINT = process.env.UPLOAD_URL+'/update/upload.php';
+const UPLOAD_ENDPOINT = UPLOAD_URL + '/update/upload.php';
 
 // Parse command line arguments
-const args = process.argv.slice(2);
-const uploadDirArg = args.find(arg => arg.startsWith('--dir='));
-const uploadDir = uploadDirArg ? uploadDirArg.split('=')[1] : './dist';
+const uploadDir = process.argv.find(arg => arg.startsWith('--dir='))?.split('=')[1] || './dist';
 
 console.log(`🚀 Starting chunked upload from directory: ${uploadDir}`);
 console.log(`📡 Upload endpoint: ${UPLOAD_ENDPOINT}`);
 console.log(`📦 Chunk size: ${(CHUNK_SIZE / 1024 / 1024).toFixed(1)}MB`);
+console.log(`🔑 API Key: ${API_KEY.substring(0, 4)}...${API_KEY.substring(API_KEY.length - 4)}\n`);
 
 /**
  * Calculate MD5 hash of a file
@@ -66,12 +55,11 @@ function calculateFileHash(filePath) {
 function makeRequest(url, options, data) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
-    const isHttps = urlObj.protocol === 'https:';
-    const client = isHttps ? https : http;
+    const client = urlObj.protocol === 'https:' ? https : http;
     
     const req = client.request({
       hostname: urlObj.hostname,
-      port: urlObj.port || (isHttps ? 443 : 80),
+      port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
       path: urlObj.pathname + urlObj.search,
       method: options.method || 'POST',
       headers: options.headers || {}
@@ -80,8 +68,7 @@ function makeRequest(url, options, data) {
       res.on('data', chunk => responseData += chunk);
       res.on('end', () => {
         try {
-          const parsed = JSON.parse(responseData);
-          resolve({ status: res.statusCode, data: parsed });
+          resolve({ status: res.statusCode, data: JSON.parse(responseData) });
         } catch (error) {
           resolve({ status: res.statusCode, data: responseData });
         }
@@ -101,39 +88,40 @@ function makeRequest(url, options, data) {
 /**
  * Upload a single chunk using multipart/form-data with raw binary data
  */
-async function uploadChunk(filePath, fileName, chunkIndex, chunkData, totalChunks, fileHash) {
-  // Create multipart form data with raw binary data (more efficient than base64)
-  const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15);
+async function uploadChunk(fileName, chunkIndex, chunkData, totalChunks, fileHash) {
+  const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
   
-  const formFields = {
-    'api_key': API_KEY,
-    'file_name': fileName,
-    'chunk_index': chunkIndex.toString(),
-    'total_chunks': totalChunks.toString(),
-    'file_hash': fileHash
-  };
+  // Build multipart form data
+  const parts = [
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="api_key"`,
+    '',
+    API_KEY,
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="file_name"`,
+    '',
+    fileName,
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="chunk_index"`,
+    '',
+    chunkIndex.toString(),
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="total_chunks"`,
+    '',
+    totalChunks.toString(),
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="file_hash"`,
+    '',
+    fileHash,
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="chunk_data"; filename="chunk_${chunkIndex}"`,
+    `Content-Type: application/octet-stream`,
+    ''
+  ];
   
-  // Build multipart form data manually
-  let formData = Buffer.alloc(0);
-  
-  // Add text fields
-  for (const [key, value] of Object.entries(formFields)) {
-    const fieldHeader = `--${boundary}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${value}\r\n`;
-    formData = Buffer.concat([formData, Buffer.from(fieldHeader)]);
-  }
-  
-  // Add binary chunk data
-  const binaryHeader = `--${boundary}\r\nContent-Disposition: form-data; name="chunk_data"; filename="chunk_${chunkIndex}"\r\nContent-Type: application/octet-stream\r\n\r\n`;
-  const binaryFooter = `\r\n--${boundary}--\r\n`;
-  
-  formData = Buffer.concat([
-    formData,
-    Buffer.from(binaryHeader),
-    chunkData,
-    Buffer.from(binaryFooter)
-  ]);
-  
-  console.log(`📦 Chunk ${chunkIndex + 1}/${totalChunks}: ${(chunkData.length / 1024 / 1024).toFixed(2)}MB`);
+  const header = Buffer.from(parts.join('\r\n') + '\r\n');
+  const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+  const formData = Buffer.concat([header, chunkData, footer]);
   
   const response = await makeRequest(UPLOAD_ENDPOINT, {
     method: 'POST',
@@ -148,7 +136,7 @@ async function uploadChunk(filePath, fileName, chunkIndex, chunkData, totalChunk
   }
   
   if (!response.data.success) {
-    throw new Error(`Server error: ${JSON.stringify(response.data)}`);
+    throw new Error(`Server error: ${response.data.message}`);
   }
   
   return response.data;
@@ -162,7 +150,7 @@ async function uploadFile(filePath) {
   const fileSize = fs.statSync(filePath).size;
   const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
   
-  console.log(`\n📄 Uploading: ${fileName}`);
+  console.log(`📄 Uploading: ${fileName}`);
   console.log(`📊 Size: ${(fileSize / 1024 / 1024).toFixed(2)}MB`);
   console.log(`🧩 Chunks: ${totalChunks}`);
   
@@ -177,13 +165,15 @@ async function uploadFile(filePath) {
   
   for await (const chunk of fileStream) {
     const progress = ((chunkIndex + 1) / totalChunks * 100).toFixed(1);
-    console.log(`⬆️  Uploading chunk ${chunkIndex + 1}/${totalChunks} (${progress}%)`);
+    const chunkSize = (chunk.length / 1024 / 1024).toFixed(2);
     
-    await uploadChunk(filePath, fileName, chunkIndex, chunk, totalChunks, fileHash);
+    console.log(`⬆️  Uploading chunk ${chunkIndex + 1}/${totalChunks} (${progress}%) - ${chunkSize}MB`);
+    
+    await uploadChunk(fileName, chunkIndex, chunk, totalChunks, fileHash);
     chunkIndex++;
   }
   
-  console.log(`✅ Successfully uploaded: ${fileName}`);
+  console.log(`✅ Successfully uploaded: ${fileName}\n`);
 }
 
 /**
@@ -203,30 +193,21 @@ function findFilesToUpload(directory) {
     const fullPath = path.join(directory, item.name);
     
     if (item.isFile()) {
-      // Windows installer files (.exe)
+      // Windows installer files
       if (item.name.endsWith('.exe') && item.name.includes('Setup')) {
         files.push({ path: fullPath, type: 'windows-installer' });
       }
-      // Windows portable files (.zip)
+      // Windows portable files
       else if (item.name.endsWith('.zip') && item.name.includes('Portable')) {
         files.push({ path: fullPath, type: 'windows-portable' });
       }
-      // macOS zip file (direct file)
+      // macOS zip file
       else if (item.name === 'Sploder-macOS.zip') {
         files.push({ path: fullPath, type: 'macos-app' });
       }
-    } else if (item.isDirectory()) {
-      // macOS app files (in mac/ directory) - only add if zip doesn't already exist
-      if (item.name === 'mac') {
-        const macZipPath = path.join(directory, 'Sploder-macOS.zip');
-        if (fs.existsSync(macZipPath)) {
-          // Zip file already exists, don't add the directory
-          console.log(`📝 Note: Using existing ${macZipPath} instead of mac directory`);
-        } else {
-          console.log(`📝 Note: macOS app directory found but no zip file. Consider creating ${macZipPath}`);
-        }
-      }
     }
+    // Note: Directory handling removed to avoid duplicates
+    // The build script should create Sploder-macOS.zip directly
   }
   
   return files;
@@ -245,25 +226,26 @@ async function main() {
       return;
     }
     
-    console.log(`\n📋 Found ${files.length} files to upload:`);
+    console.log(`📋 Found ${files.length} files to upload:`);
     files.forEach(file => {
       console.log(`  • ${path.basename(file.path)} (${file.type})`);
     });
+    console.log('');
     
     // Upload each file
     for (const file of files) {
       try {
         await uploadFile(file.path);
       } catch (error) {
-        console.error(`❌ Failed to upload ${file.path}:`, error.message);
+        console.error(`❌ Failed to upload ${file.path}: ${error.message}`);
         process.exit(1);
       }
     }
     
-    console.log('\n🎉 All files uploaded successfully!');
+    console.log('🎉 All files uploaded successfully!');
     
   } catch (error) {
-    console.error('❌ Upload process failed:', error.message);
+    console.error(`❌ Upload process failed: ${error.message}`);
     process.exit(1);
   }
 }
