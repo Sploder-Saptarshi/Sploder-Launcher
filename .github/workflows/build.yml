@@ -182,7 +182,7 @@ jobs:
           if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
           uses: softprops/action-gh-release@v1
           with:
-            tag_name: v${{ steps.package-version.outputs.version }}
+            tag_name: ${{ steps.package-version.outputs.version }}
             name: Sploder Launcher v${{ steps.package-version.outputs.version }}
             body: |
               **Windows Builds:**
