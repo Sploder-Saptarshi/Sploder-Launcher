@@ -3,7 +3,7 @@ const path = require("path");
 const url = require("url");
 
 // Import centralized configuration
-const { config } = require("../config");
+const { createConfig } = require("../config");
 
 // Helper function to create proper file URLs
 function pathToFileURL(filePath) {
@@ -19,6 +19,9 @@ if (process.platform == "win32") {
 let win;
 let pluginName;
 const isDev = !app.isPackaged;
+
+// Create configuration with proper isDev detection
+const config = createConfig(isDev);
 
 let rendererPath, preloadPath;
 if(isDev) {
