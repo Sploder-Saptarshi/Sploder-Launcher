@@ -11,7 +11,8 @@
     "dist-64bit": "yarn compile && electron-builder",
     "dist-32bit": "yarn compile && electron-builder --ia32",
     "dist": "node scripts/build.js",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
+    "upload": "node scripts/uploader.js"
   },
   "dependencies": {
     "discord-rpc": "^4.0.1",
