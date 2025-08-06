@@ -11,7 +11,7 @@ on:
 jobs:
   build:
       runs-on: ${{ matrix.os }}
-      timeout-minutes: 15
+      timeout-minutes: 30
 
       strategy:
           matrix:
@@ -136,4 +136,5 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
             name: Linux Portable Files
+
             path: dist/linux-unpacked
