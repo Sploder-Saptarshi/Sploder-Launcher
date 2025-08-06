@@ -47,7 +47,7 @@ switch (process.platform) {
 
 let flashpath;
 if(isDev){
-  flashpath = path.join("../../../plugins/", pluginName);
+  flashpath = path.join(__dirname ,"../..", "plugins", pluginName);
 } else {
   flashpath = path.join(path.dirname(app.getAppPath()), 'plugins', pluginName);
 }
