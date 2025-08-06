@@ -129,8 +129,8 @@ try {
           console.log('\x1b[33mRemoved existing zip file\x1b[0m');
         }
         
-        // Create zip file using native zip command with maximum compression
-        execSync(`cd "${distPath}" && zip -9 -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
+        // Create zip file using native zip command with maximum compression (silent)
+        execSync(`cd "${distPath}" && zip -q -9 -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
         
         // Check and log the final zip file size
         if (fs.existsSync(zipFilePath)) {
