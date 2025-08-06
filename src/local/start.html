@@ -22,9 +22,6 @@
                 const updateUrl = await window.electronAPI.getUrl('update');
                 window.location.href = updateUrl;
             } catch (error) {
-                console.error('Error getting update URL:', error);
-                // Fallback to hardcoded URL in case of error
-                window.location.href = "https://sploder.com/update";
             }
         }
         

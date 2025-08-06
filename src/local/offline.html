@@ -18,17 +18,18 @@ async function getRetryParameter() {
   // Get the value of the 'retry' parameter
   var retryParameterValue = url.searchParams.get('retry');
 
-  // If the retry parameter is provided, use it, otherwise get the update URL from the config
-  if (retryParameterValue !== null) {
+  // If the retry parameter is provided, use it
+  if (retryParameterValue !== null && retryParameterValue !== '') {
     return retryParameterValue;
   } else {
+    // Since we're in an iframe, we can't access electronAPI directly
+    // Try to get it from the parent window if available
     try {
-      // Get the update URL from the main process
-      return await window.electronAPI.getUrl('update');
+      if (window.parent && window.parent !== window && window.parent.electronAPI) {
+        return await window.parent.electronAPI.getUrl('update');
+      }
     } catch (error) {
-      console.error('Error getting update URL:', error);
-      // Fallback to hardcoded URL in case of error
-      return 'https://sploder.com/update';
+      console.log('Cannot access parent window electronAPI (expected in iframe):', error);
     }
   }
 }
