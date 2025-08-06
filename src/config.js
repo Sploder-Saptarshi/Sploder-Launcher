@@ -3,6 +3,8 @@
  * This file is used by both the main process and the build script
  */
 
+const { systemPreferences } = require("electron");
+
 // Create configuration factory function
 function createConfig(isDev = false, buildConfig = {}) {
   return {
@@ -28,39 +30,23 @@ function createConfig(isDev = false, buildConfig = {}) {
       // Add parameters for update endpoint
       if (endpoint === 'update') {
         const params = new URLSearchParams();
-        
+        systemInfo = '';
         // Add OS information
-        console.log('[CONFIG] Adding OS parameter:', process.platform);
-        params.append('os', process.platform);
+        platform = process.platform || 'unknown';
+        systemInfo += platform;
         
         // Add architecture information (ensure it's not undefined)
         const arch = process.arch || 'unknown';
-        console.log('[CONFIG] Adding ARCH parameter:', arch);
-        params.append('arch', arch);
-        
-        // Add packaging method from build configuration (Windows only)
-        console.log('[CONFIG] Platform check:', process.platform);
-        console.log('[CONFIG] Build config:', JSON.stringify(this.build, null, 2));
-        
+        arch = process.arch || 'unknown';
+        systeminfo += `-${arch}`;
+                
         if (process.platform === 'win32' && this.build && this.build.packagingMethod) {
-          console.log('[CONFIG] Adding METHOD parameter:', this.build.packagingMethod);
-          params.append('method', this.build.packagingMethod);
-        } else {
-          console.log('[CONFIG] METHOD parameter NOT added. Reasons:');
-          console.log('  - Platform is Windows:', process.platform === 'win32');
-          console.log('  - Build config exists:', !!this.build);
-          console.log('  - Packaging method exists:', !!(this.build && this.build.packagingMethod));
+          method = this.build.packagingMethod || 'installed';
+          systemInfo += `-${method}`;
         }
-        
-        // Log all parameters before creating URL
-        console.log('[CONFIG] All URL parameters:');
-        for (const [key, value] of params) {
-          console.log(`  ${key} = ${value}`);
-        }
-        
-        const finalUrl = `${baseUrl}?${params.toString()}`;
-        console.log('[CONFIG] Final generated URL:', finalUrl);
-        
+
+        params.append('info', systemInfo);
+                
         return finalUrl;
       }
       
