@@ -5,6 +5,15 @@ const url = require("url");
 // Import centralized configuration
 const { createConfig } = require("../config");
 
+// Import build configuration safely (file may not exist in development)
+let buildConfig = {};
+try {
+  buildConfig = require("./build-config");
+} catch (error) {
+  // build-config.js doesn't exist, use empty config (development mode)
+  buildConfig = {};
+}
+
 // Helper function to create proper file URLs
 function pathToFileURL(filePath) {
   const formattedPath = path.resolve(filePath).replace(/\\/g, '/');
@@ -18,14 +27,9 @@ if (process.platform == "win32") {
 }
 let win;
 let pluginName;
-// Injected build configuration
-const BUILD_CONFIG = {"packagingMethod":"installed"};
-
 const isDev = !app.isPackaged;
 
 // Create configuration with proper isDev detection and build config
-// BUILD_CONFIG will be replaced during build process
-const buildConfig = typeof BUILD_CONFIG !== 'undefined' ? BUILD_CONFIG : {};
 const config = createConfig(isDev, buildConfig);
 
 let rendererPath, preloadPath;

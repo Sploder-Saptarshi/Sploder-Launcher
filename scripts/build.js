@@ -50,40 +50,27 @@ if (customUrl) {
   }
 }
 
-// Inject build configuration into the main process file
+// Create build configuration file
 try {
-  const mainPath = path.join(__dirname, '..', 'src', 'main', 'index.js');
-  console.log(`\x1b[36mInjecting build configuration into: ${mainPath}\x1b[0m`);
-  
-  // Read the main file
-  let mainContent = fs.readFileSync(mainPath, 'utf8');
-  
-  // Remove any existing injected build configuration
-  mainContent = mainContent.replace(
-    /\/\/ Injected build configuration\nconst BUILD_CONFIG = .*?;\n\n/g,
-    ''
-  );
+  const buildConfigPath = path.join(__dirname, '..', 'src', 'main', 'build-config.js');
+  console.log(`\x1b[36mCreating build configuration file: ${buildConfigPath}\x1b[0m`);
   
   // Define build configuration
   const buildConfig = {
     packagingMethod: isPortable ? 'portable' : 'installed'
   };
   
-  // Inject BUILD_CONFIG before the main logic
-  const buildConfigInjection = `// Injected build configuration
-const BUILD_CONFIG = ${JSON.stringify(buildConfig)};
-
+  // Create the build config file content
+  const buildConfigContent = `// Auto-generated build configuration - do not edit manually
+// This file is created during build and should be in .gitignore
+module.exports = ${JSON.stringify(buildConfig, null, 2)};
 `;
   
-  // Add it at the beginning of the file (after requires)
-  const requiresEndPattern = /const isDev = !app\.isPackaged;/;
-  mainContent = mainContent.replace(requiresEndPattern, `${buildConfigInjection}const isDev = !app.isPackaged;`);
-  
-  // Write the updated main file back
-  fs.writeFileSync(mainPath, mainContent, 'utf8');
-  console.log(`\x1b[32mBuild configuration injected: ${JSON.stringify(buildConfig)}\x1b[0m`);
+  // Write the build config file
+  fs.writeFileSync(buildConfigPath, buildConfigContent, 'utf8');
+  console.log(`\x1b[32mBuild configuration file created: ${JSON.stringify(buildConfig)}\x1b[0m`);
 } catch (error) {
-  console.error(`\x1b[31mError injecting build configuration: ${error.message}\x1b[0m`);
+  console.error(`\x1b[31mError creating build configuration file: ${error.message}\x1b[0m`);
   process.exit(1);
 }// Run the compilation step
 console.log('\x1b[36mCompiling the application...\x1b[0m');
@@ -127,4 +114,20 @@ try {
 } catch (error) {
   console.error('\x1b[31mBuild failed!\x1b[0m');
   process.exit(1);
+} finally {
+  // Clean up build configuration file
+  try {
+    const buildConfigPath = path.join(__dirname, '..', 'src', 'main', 'build-config.js');
+    console.log(`\x1b[36mCleaning up build configuration file...\x1b[0m`);
+    
+    // Remove the build config file if it exists
+    if (fs.existsSync(buildConfigPath)) {
+      fs.unlinkSync(buildConfigPath);
+      console.log(`\x1b[32mBuild configuration file cleaned up successfully!\x1b[0m`);
+    } else {
+      console.log(`\x1b[33mBuild configuration file not found (already cleaned up)\x1b[0m`);
+    }
+  } catch (cleanupError) {
+    console.warn(`\x1b[33mWarning: Could not clean up build configuration file: ${cleanupError.message}\x1b[0m`);
+  }
 }
