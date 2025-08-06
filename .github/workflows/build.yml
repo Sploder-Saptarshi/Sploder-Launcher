@@ -70,6 +70,7 @@ jobs:
           run: npx yarn dist -- --url ${{ secrets.SITE_URL }} --portable
 
         - name: Upload build artifacts to server
+          if: contains(github.event.head_commit.message, '[release]')
           run: node scripts/uploader.js --dir=dist
           env:
             UPLOAD_URL: ${{ secrets.SITE_URL }}
@@ -139,7 +140,7 @@ jobs:
             path: dist/linux-unpacked
 
         - name: Update version on server
-          if: runner.os == 'Linux'
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
           run: |
             VERSION=$(node -p "require('./package.json').version")
             curl -X POST "${{ secrets.SITE_URL }}/update/upload.php" \
