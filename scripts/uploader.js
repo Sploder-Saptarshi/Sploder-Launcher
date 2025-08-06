@@ -11,13 +11,19 @@ const { createHash } = require('crypto');
 
 // Configuration
 const CHUNK_SIZE = 90 * 1024 * 1024; // 90MB chunks
-const UPLOAD_ENDPOINT = process.env.UPLOAD_URL+"/update/upload.php";
 const API_KEY = process.env.UPLOAD_API_KEY;
 
 if (!API_KEY) {
   console.error('❌ UPLOAD_API_KEY environment variable is required');
   process.exit(1);
 }
+
+if (!process.env.UPLOAD_URL) {
+  console.error('❌ UPLOAD_URL environment variable is required');
+  process.exit(1);
+}
+
+const UPLOAD_ENDPOINT = process.env.UPLOAD_URL+'/update/upload.php';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
