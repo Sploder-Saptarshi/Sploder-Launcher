@@ -111,6 +111,35 @@ try {
   }
   
   console.log('\x1b[32mBuild completed successfully!\x1b[0m');
+  
+  // Post-build step: Create zip file for macOS
+  if (process.platform === 'darwin') {
+    console.log('\x1b[36mCreating macOS zip file...\x1b[0m');
+    try {
+      const distPath = path.join(__dirname, '..', 'dist');
+      const macAppPath = path.join(distPath, 'mac', 'Sploder.app');
+      const zipFileName = 'Sploder-macOS.zip';
+      const zipFilePath = path.join(distPath, zipFileName);
+      
+      // Check if the .app directory exists
+      if (fs.existsSync(macAppPath)) {
+        // Remove existing zip file if it exists
+        if (fs.existsSync(zipFilePath)) {
+          fs.unlinkSync(zipFilePath);
+          console.log('\x1b[33mRemoved existing zip file\x1b[0m');
+        }
+        
+        // Create zip file using native zip command
+        execSync(`cd "${distPath}" && zip -r "${zipFileName}" mac/Sploder.app`, { stdio: 'inherit' });
+        console.log(`\x1b[32mmacOS zip file created: ${zipFilePath}\x1b[0m`);
+      } else {
+        console.log('\x1b[33mWarning: macOS .app directory not found, skipping zip creation\x1b[0m');
+      }
+    } catch (zipError) {
+      console.warn(`\x1b[33mWarning: Could not create macOS zip file: ${zipError.message}\x1b[0m`);
+    }
+  }
+  
 } catch (error) {
   console.error('\x1b[31mBuild failed!\x1b[0m');
   process.exit(1);
