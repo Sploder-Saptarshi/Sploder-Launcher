@@ -146,6 +146,27 @@ jobs:
             VERSION=$(node -p "require('./package.json').version")
             echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+        - name: Download Windows artifacts
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
+          uses: actions/download-artifact@v4
+          with:
+            name: Windows Installer Files
+            path: release-files/
+
+        - name: Download Windows portable artifacts
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
+          uses: actions/download-artifact@v4
+          with:
+            name: Windows Portable Files
+            path: release-files/
+
+        - name: Download macOS artifacts
+          if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
+          uses: actions/download-artifact@v4
+          with:
+            name: macOS Portable Files
+            path: release-files/
+
         - name: Update version on server
           if: runner.os == 'Linux' && contains(github.event.head_commit.message, '[release]')
           run: |
@@ -181,8 +202,7 @@ jobs:
               - Sploder-${{ steps.package-version.outputs.version }}.pacman - Pacman package for Linux
               - Sploder-${{ steps.package-version.outputs.version }}.AppImage - AppImage for Linux
             files: |
-              dist/*.exe
-              dist/*.zip
+              release-files/*
               dist/*.snap
               dist/*.deb
               dist/*.rpm
