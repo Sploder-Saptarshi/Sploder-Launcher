@@ -32,11 +32,12 @@ function createConfig(isDev = false, buildConfig = {}) {
         // Add OS information
         params.append('os', process.platform);
         
-        // Add architecture information
-        params.append('arch', process.arch);
+        // Add architecture information (ensure it's not undefined)
+        const arch = process.arch || 'unknown';
+        params.append('arch', arch);
         
         // Add packaging method from build configuration (Windows only)
-        if (process.platform === 'win32') {
+        if (process.platform === 'win32' && this.build && this.build.packagingMethod) {
           params.append('method', this.build.packagingMethod);
         }
         
