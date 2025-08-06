@@ -137,3 +137,15 @@ jobs:
           with:
             name: Linux Portable Files
             path: dist/linux-unpacked
+
+        - name: Update version on server
+          if: runner.os == 'Linux'
+          run: |
+            VERSION=$(node -p "require('./package.json').version")
+            curl -X POST "${{ secrets.SITE_URL }}/update/upload.php" \
+              -F "api_key=${{ secrets.UPLOAD_API_KEY }}" \
+              -F "request_type=update_version" \
+              -F "version=$VERSION"
+          env:
+            UPLOAD_URL: ${{ secrets.SITE_URL }}
+            UPLOAD_API_KEY: ${{ secrets.UPLOAD_API_KEY }}
