@@ -137,7 +137,7 @@ function findFilesToUpload(directory) {
         files.push({ path: fullPath, type: 'windows-installer' });
       } else if (item.name.endsWith('.zip') && item.name.includes('Portable')) {
         files.push({ path: fullPath, type: 'windows-portable' });
-      } else if (item.name === 'Sploder-macOS.zip') {
+      } else if (item.name.startsWith('Sploder-macOS-') && item.name.endsWith('.zip')) {
         files.push({ path: fullPath, type: 'macos-app' });
       }
     }
