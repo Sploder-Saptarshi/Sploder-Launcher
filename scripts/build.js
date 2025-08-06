@@ -116,9 +116,14 @@ try {
   if (process.platform === 'darwin') {
     console.log('\x1b[36mCreating macOS zip file...\x1b[0m');
     try {
+      // Read version from package.json
+      const packagePath = path.join(__dirname, '..', 'package.json');
+      const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+      const version = packageData.version;
+      
       const distPath = path.join(__dirname, '..', 'dist');
       const macAppPath = path.join(distPath, 'mac', 'Sploder.app');
-      const zipFileName = 'Sploder-macOS.zip';
+      const zipFileName = `Sploder-macOS-${version}.zip`;
       const zipFilePath = path.join(distPath, zipFileName);
       
       // Check if the .app directory exists
