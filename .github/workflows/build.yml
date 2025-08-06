@@ -186,21 +186,21 @@ jobs:
             name: Sploder Launcher v${{ steps.package-version.outputs.version }}
             body: |
               **Windows Builds:**
-              - Sploder-Setup-${{ steps.package-version.outputs.version }}.exe - Universal build for Windows
-              - Sploder-Setup-${{ steps.package-version.outputs.version }}-ia32.exe - 32-bit build for Windows  
-              - Sploder-Setup-${{ steps.package-version.outputs.version }}-x64.exe - 64-bit build for Windows
-              - Sploder-Portable-ia32.zip - 32-bit portable build for Windows
-              - Sploder-Portable-x64.zip - 64-bit portable build for Windows
-              
+              - [Sploder-Setup-${{ steps.package-version.outputs.version }}.exe](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-Setup-${{ steps.package-version.outputs.version }}.exe) - Universal build for Windows
+              - [Sploder-Setup-${{ steps.package-version.outputs.version }}-ia32.exe](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-Setup-${{ steps.package-version.outputs.version }}-ia32.exe) - 32-bit build for Windows  
+              - [Sploder-Setup-${{ steps.package-version.outputs.version }}-x64.exe](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-Setup-${{ steps.package-version.outputs.version }}-x64.exe) - 64-bit build for Windows
+              - [Sploder-${{ steps.package-version.outputs.version }}-Portable-ia32.zip](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}-Portable-ia32.zip) - 32-bit portable build for Windows
+              - [Sploder-${{ steps.package-version.outputs.version }}-Portable-x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}-Portable-x64.zip) - 64-bit portable build for Windows
+
               **macOS Builds:**
-              - Sploder-macOS-${{ steps.package-version.outputs.version }}.zip - macOS build
+              - [Sploder-macOS-${{ steps.package-version.outputs.version }}.zip](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-macOS-${{ steps.package-version.outputs.version }}.zip) - macOS build
               
               **Linux Builds:**
-              - Sploder-${{ steps.package-version.outputs.version }}.snap - Snap package for Linux
-              - Sploder-${{ steps.package-version.outputs.version }}.deb - Debian package for Linux
-              - Sploder-${{ steps.package-version.outputs.version }}.rpm - RPM package for Linux
-              - Sploder-${{ steps.package-version.outputs.version }}.pacman - Pacman package for Linux
-              - Sploder-${{ steps.package-version.outputs.version }}.AppImage - AppImage for Linux
+              - [Sploder-${{ steps.package-version.outputs.version }}.snap](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}.snap) - Snap package for Linux
+              - [Sploder-${{ steps.package-version.outputs.version }}.deb](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}.deb) - Debian package for Linux
+              - [Sploder-${{ steps.package-version.outputs.version }}.rpm](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}.rpm) - RPM package for Linux
+              - [Sploder-${{ steps.package-version.outputs.version }}.pacman](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}.pacman) - Pacman package for Linux
+              - [Sploder-${{ steps.package-version.outputs.version }}.AppImage](https://github.com/${{ github.repository }}/releases/download/${{ steps.package-version.outputs.version }}/Sploder-${{ steps.package-version.outputs.version }}.AppImage) - AppImage for Linux
             files: |
               release-files/*
               dist/*.snap

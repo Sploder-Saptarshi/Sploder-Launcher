@@ -90,11 +90,16 @@ try {
   }).join(' ');
   
   if (isPortable) {
+    // Read version from package.json for portable builds
+    const packagePath = path.join(__dirname, '..', 'package.json');
+    const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+    const version = packageData.version;
+    
     // Build only portable versions
     if (process.platform === 'win32') {
-      execSync(`npx yarn electron-builder --win zip --ia32 --x64 -c.win.artifactName="Sploder-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
+      execSync(`npx yarn electron-builder --win zip --ia32 --x64 -c.win.artifactName="Sploder-${version}-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
     } else if (process.platform === 'darwin') {
-      execSync(`electron-builder --mac zip --x64 -c.mac.artifactName="Sploder-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
+      execSync(`electron-builder --mac zip --x64 -c.mac.artifactName="Sploder-${version}-Portable-\${arch}.\${ext}" ${filteredArgs}`, { stdio: 'inherit' });
     } else {
       // For Linux, we'll use the unpacked directory as "portable"
       execSync(`electron-builder --linux dir ${filteredArgs}`, { stdio: 'inherit' });
