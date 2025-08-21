@@ -19,17 +19,95 @@ function pathToFileURL(filePath) {
   return `file:///${formattedPath}`;
 }
 
+// Create configuration with proper isDev detection and build config
+const isDev = !app.isPackaged;
+const config = createConfig(isDev, buildConfig);
+
+// Set up IPC handlers early to ensure they're registered before window creation
+let win;
+let currentStatus = 'Playing Sploder';
+
+// Set up IPC handlers for window control
+ipcMain.handle('window-minimize', (event) => {
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    browserWindow.minimize();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('window-maximize', (event) => {
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    if (browserWindow.isMaximized()) {
+      browserWindow.unmaximize();
+      return false;
+    } else {
+      browserWindow.maximize();
+      return true;
+    }
+  }
+  return false;
+});
+
+ipcMain.handle('window-close', (event) => {
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    browserWindow.close();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('window-is-maximized', (event) => {
+  const webContents = event.sender;
+  const browserWindow = BrowserWindow.fromWebContents(webContents);
+  
+  if (browserWindow) {
+    return browserWindow.isMaximized();
+  }
+  return false;
+});
+
+ipcMain.handle('get-rpc-info', async (event) => {
+  if (!win) return '';
+  try {
+    const status = await win.webContents.executeJavaScript('window.rpcinfo || ""');
+    currentStatus = status || 'Playing Sploder';
+    return status;
+  } catch (error) {
+    return '';
+  }
+});
+
+ipcMain.handle('update-rpc-status', (event, status) => {
+  if (status) {
+    currentStatus = status;
+  }
+  return currentStatus;
+});
+
+ipcMain.handle('get-config', (event) => {
+  return config;
+});
+
+ipcMain.handle('get-url', (event, endpoint) => {
+  return config.getUrl(endpoint);
+});
+
 // If not on windows, disable RPC
 let DiscordRPC;
 if (process.platform == "win32") {
   DiscordRPC = require('discord-rpc');
 }
-let win;
 let pluginName;
-const isDev = !app.isPackaged;
-
-// Create configuration with proper isDev detection and build config
-const config = createConfig(isDev, buildConfig);
 
 let rendererPath, preloadPath;
 if(isDev) {
@@ -233,7 +311,7 @@ app.on("window-all-closed", function () {
 });
 
 
-if (process.platform == "win32") {
+//if (process.platform == "win32") {
   const clientId = '915116210570539058';
   const rpc = new DiscordRPC.Client({ transport: 'ipc' });
   const startTimestamp = new Date();
@@ -242,12 +320,11 @@ if (process.platform == "win32") {
     if (!rpc || !win) {
       return;
     }
-    const boops = await win.webContents.executeJavaScript('rpcinfo');
     rpc.setActivity({
-      details: `${boops}`,
+      details: currentStatus,
       startTimestamp,
       largeImageKey: 'icon',
-      largeImageText: `${boops}`
+      largeImageText: currentStatus
     });
   }
 
@@ -259,7 +336,7 @@ if (process.platform == "win32") {
   });
 
   rpc.login({ clientId }).catch();
-}
+//}
 
 // Set up IPC handlers for window control
 ipcMain.handle('window-minimize', (event) => {
@@ -317,10 +394,20 @@ ipcMain.handle('window-is-maximized', (event) => {
 ipcMain.handle('get-rpc-info', async (event) => {
   if (!win) return '';
   try {
-    return await win.webContents.executeJavaScript('rpcinfo');
+    const status = await win.webContents.executeJavaScript('window.rpcinfo || ""');
+    currentStatus = status || 'Playing Sploder';
+    return status;
   } catch (error) {
     return '';
   }
+});
+
+// Handler to update RPC status from renderer
+ipcMain.handle('update-rpc-status', (event, status) => {
+  if (status) {
+    currentStatus = status;
+  }
+  return currentStatus;
 });
 
 // Handler to provide application configuration to the renderer
