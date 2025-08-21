@@ -1,10 +1,10 @@
 {
   "name": "Sploder",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "author": "Saptarshi <saptarshi12345yt@gmail.com>",
   "main": "dist/main/main.js",
   "description": "Sploder Launcher",
-  "license": "MIT",
+  "license": "GPL-2.0-only",
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",

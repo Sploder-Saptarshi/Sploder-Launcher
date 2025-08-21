@@ -311,7 +311,7 @@ app.on("window-all-closed", function () {
 });
 
 
-//if (process.platform == "win32") {
+if (process.platform == "win32") {
   const clientId = '915116210570539058';
   const rpc = new DiscordRPC.Client({ transport: 'ipc' });
   const startTimestamp = new Date();
@@ -336,7 +336,7 @@ app.on("window-all-closed", function () {
   });
 
   rpc.login({ clientId }).catch();
-//}
+}
 
 // Set up IPC handlers for window control
 ipcMain.handle('window-minimize', (event) => {
