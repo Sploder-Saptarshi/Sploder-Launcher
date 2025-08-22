@@ -120,9 +120,18 @@
     var rpcinfo;
     function discordrpc() {
       try {
-        rpcinfo = document.getElementById("content-frame").contentWindow.window.rpcinfo;
+        // Try to get RPC info from the iframe content
+        const frameWindow = document.getElementById("content-frame").contentWindow;
+        if (frameWindow && frameWindow.rpcinfo) {
+          rpcinfo = frameWindow.rpcinfo;
+          // Update the Discord RPC status in the main process
+          if (window.electronAPI && window.electronAPI.updateRpcStatus) {
+            window.electronAPI.updateRpcStatus(rpcinfo);
+          }
+        }
       } catch (error) {
-        console.error('Error in discordrpc:', error);
+        // Silently handle cross-origin errors or other issues
+        // This is expected when the iframe contains external content
       }
     }
     setInterval(discordrpc, 15000);

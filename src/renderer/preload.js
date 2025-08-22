@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeWindow: () => ipcRenderer.invoke('window-close'),
   isWindowMaximized: () => ipcRenderer.invoke('window-is-maximized'),
   getRpcInfo: () => ipcRenderer.invoke('get-rpc-info'),
+  updateRpcStatus: (status) => ipcRenderer.invoke('update-rpc-status', status),
   onWindowStateChange: (callback) => {
     ipcRenderer.on('window-state-change', (_, isMaximized) => {
       callback(isMaximized);

@@ -77,14 +77,7 @@ ipcMain.handle('window-is-maximized', (event) => {
 });
 
 ipcMain.handle('get-rpc-info', async (event) => {
-  if (!win) return '';
-  try {
-    const status = await win.webContents.executeJavaScript('window.rpcinfo || ""');
-    currentStatus = status || 'Playing Sploder';
-    return status;
-  } catch (error) {
-    return '';
-  }
+  return currentStatus;
 });
 
 ipcMain.handle('update-rpc-status', (event, status) => {
