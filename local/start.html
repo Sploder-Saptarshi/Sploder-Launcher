@@ -206,7 +206,24 @@
     }
   });
 
+  
 
+function toggleMusic() {
+  const musicBtn = document.getElementById('music-btn');
+  if (musicBtn.classList.contains('crossed-out')) {
+    musicBtn.classList.remove('crossed-out');
+    // Unmute music logic here
+    if (window.electronAPI && window.electronAPI.setMusicMuted) {
+      window.electronAPI.setMusicMuted(false);
+    }
+  } else {
+    musicBtn.classList.add('crossed-out');
+    // Mute music logic here
+    if (window.electronAPI && window.electronAPI.setMusicMuted) {
+      window.electronAPI.setMusicMuted(true);
+    }
+  }
+}
 
 
 </script>
@@ -262,6 +279,36 @@
       -webkit-user-select: none;
       -webkit-app-region: drag;
     }
+.music-btn {
+  position: relative;
+}
+.music-btn svg {
+  margin-top: 1px;
+  margin-left: -1px;
+  width: 17px; /* Adjust size as needed, e.g., 70% of the button's width */
+  height: 17px;
+  /* If using fill="currentColor", you can change the icon's color here */
+  color: #fff;
+}
+/* Upon clicking, darken the SVG */
+.music-btn:active svg {
+  color: #b6b6b6; /* Darken the color on click */
+}
+#music-btn.crossed-out::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 2px; /* Thickness of the cross line */
+  background-color: #fff; /* Color of the cross line */
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none; /* Allows clicks to pass through to the button */
+}
+/* Upon clicking, darken crossed-out */
+#music-btn.crossed-out:active::after {
+  background-color: #b6b6b6; /* Darken the cross line on click */
+}
 </style>
 <body>
   
@@ -271,6 +318,11 @@
           <div class="title-bar-text">Sploder</div>
           <div class="titlebar-movable" onmouseup="setTimeout(checkmax, 50)" onmousedown="setTimeout(checkmax, 500)"></div>
           <div class="title-bar-controls">
+            <button aria-label="Minimize" id="music-btn" class="music-btn" onclick="toggleMusic()" aria-label="Toggle Music">
+    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0,0,256,256">
+<g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.33333,5.33333)"><path d="M25,4c-2.209,0 -4,1.791 -4,4v19.36914l0.01758,0.02148c-0.8148,-0.25595 -1.66353,-0.38764 -2.51758,-0.39062c-4.69442,0 -8.5,3.80558 -8.5,8.5c0,4.69442 3.80558,8.5 8.5,8.5c2.2855,-0.00104 4.47428,-0.92243 6.07245,-2.55624c1.59817,-1.63382 2.47106,-3.84239 2.42169,-6.12735c0.00158,0.06211 0.00586,0.12416 0.00586,0.18359v-31.5zM30,6.39063v8.03906c0.07,0.06 0.12945,0.11969 0.18945,0.17969c3.06,3.01 4.98,4.91148 3,9.27148c-0.82,1.8 -0.23984,3.92953 1.41016,5.01953l1.90039,1.25977c7.12,-10.73 1.79039,-15.98031 -2.09961,-19.82031c-1.44,-1.43 -3.06039,-2.82922 -4.40039,-3.94922zM26.98828,35.1582l0.00195,0.00195c0.0008,0.00884 -0.00068,0.01838 0,0.02734c-0.00063,-0.00977 -0.00129,-0.01953 -0.00195,-0.0293z"></path></g></g>
+</svg>
+</button>
             <button id="min-btn" onclick="window.electronAPI.minimizeWindow()" aria-label="Minimize"></button>
             <button id="max-btn" onclick="toggleMaximize()" aria-label="Maximize"></button>
             <button id="close-btn" onclick="window.electronAPI.closeWindow()" aria-label="Close"></button>
