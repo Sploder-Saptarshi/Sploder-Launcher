@@ -62,7 +62,7 @@ const loadMusicState = () => {
         const store = transaction.objectStore(storeName);
         const request = store.get('musicState');
         request.onsuccess = (event) => {
-            const state = event.target.result !== undefined ? event.target.result : false;
+            const state = event.target.result !== undefined ? event.target.result : true;
             resolve(state);
         };
         request.onerror = (event) => {
@@ -129,6 +129,7 @@ async function initChiptunePlayer() {
         } = await import('./lib/chiptune3.min.js');
         const audioContext = new AudioContext();
         chiptunePlayer = new ChiptuneJsPlayer(audioContext);
+        chiptunePlayer.setVol(0.3); 
         isChiptunePlayerReady = true;
     } catch (e) {
         console.error('Error loading or initializing ChiptuneJsPlayer:', e);
@@ -201,7 +202,7 @@ const fadeAndPauseMusic = () => {
     const isMp3 = megaRandomList[currentTrackIndex].endsWith('.mp3');
     const player = isMp3 ? audioPlayer : chiptunePlayer;
 
-    fadeMusicVolume(1, 0, () => {
+    fadeMusicVolume(0.3, 0, () => {
         if (isMp3) {
             player.pause();
         } else if (isChiptunePlayerReady) {
@@ -279,7 +280,7 @@ const resumeMusic = () => {
         }
     }
 
-    fadeMusicVolume(0, 1);
+    fadeMusicVolume(0, 0.3);
 };
 function toggleMusic() {
     userWantsMusicOn = !userWantsMusicOn;
@@ -292,6 +293,7 @@ function toggleMusic() {
 async function initializeApp() {
     musicBtn = document.getElementById('music-btn');
     audioPlayer = new Audio();
+    audioPlayer.volume = 0.3;
     audioPlayer.addEventListener('ended', playNextTrack);
     
     await initChiptunePlayer();
