@@ -230,7 +230,7 @@ function createWindow() {
   }  
   
   // Load the URL with proper file protocol and use the config for the initial URL
-  const startUrl = `${pathToFileURL(startHtmlPath)}?url=${config.getUrl('update')}`;
+  const startUrl = `${pathToFileURL(startHtmlPath)}?music=true&url=${config.getUrl('update')}`;
   win.loadURL(startUrl);
   
   win.webContents.on('did-finish-load', () => {

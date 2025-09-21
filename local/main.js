@@ -1,239 +1,16 @@
-// Wait for DOM to be fully loaded before initializing
 document.addEventListener('DOMContentLoaded', initializeApp);
+
+let wasMusicPlayingOnStart = false;
 let isMusicPlaying = false;
-var musicBtn = document.getElementById('music-btn');
-async function initializeApp() {
-    musicBtn = document.getElementById('music-btn');
-
-    // Check get parameter to get URL
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const url = urlParams.get('url');
-
-    // If the URL is not provided, redirect to the update page
-    if (url == null) {
-        try {
-            const updateUrl = await window.electronAPI.getUrl('update');
-            window.location.href = updateUrl;
-        } catch (error) {
-        }
-    }
-
-    // Store URL in a global variable for other functions to access
-    window.initialURL = url;
-
-    var page;
-    var prevpage;
-    var pagestat;
-
-    // Set up document content
-    document.getElementById("content-frame").setAttribute('src', url);
-
-    // Initialize the button state
-    checkmax();
-
-    await openDB();
-    isMusicPlaying = await loadMusicState();
-
-    // Set the initial appearance of the button based on the loaded state
-    if (isMusicPlaying) {
-        musicBtn.classList.remove('crossed-out');
-    } else {
-        musicBtn.classList.add('crossed-out');
-    }
-
-    // Set up additional window state listeners
-    setTimeout(() => {
-        window.addEventListener('resize', () => {
-            setTimeout(checkmax, 50);
-        });
-
-        // Additional event listener for the title bar
-        const titleBar = document.querySelector('.title-bar');
-        if (titleBar) {
-            titleBar.addEventListener('mouseup', () => setTimeout(checkmax, 50));
-            titleBar.addEventListener('dblclick', () => setTimeout(checkmax, 50));
-        }
-
-        // Listen for window state changes directly from the main process
-        if (window.electronAPI && window.electronAPI.onWindowStateChange) {
-            window.electronAPI.onWindowStateChange((isMaximized) => {
-                const maxButton = document.getElementById('max-btn');
-                if (maxButton) {
-                    maxButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
-                }
-            });
-        }
-    }, 100);
-
-    // Start the interval functions
-    setInterval(discordrpc, 15000);
-}
-
-// Window control functions using IPC
-async function toggleMaximize() {
-    try {
-        const maxButton = document.getElementById('max-btn');
-        if (!maxButton) return; // Safety check
-
-        // Call the maximize function which returns true if window is now maximized
-        const isMaximized = await window.electronAPI.maximizeWindow();
-
-        // Update button appearance immediately based on the returned state
-        if (isMaximized) {
-            maxButton.setAttribute('aria-label', 'Restore');
-        } else {
-            maxButton.setAttribute('aria-label', 'Maximize');
-        }
-    } catch (error) {
-        console.error('Error in toggleMaximize:', error);
-    }
-}
-
-async function checkmax() {
-    try {
-        const maxButton = document.getElementById('max-btn');
-        if (!maxButton) return; // Safety check
-
-        // Get the current window state
-        const isMaximized = await window.electronAPI.isWindowMaximized();
-
-        // Update the button's appearance based on the window state
-        if (isMaximized) {
-            if (maxButton.getAttribute('aria-label') !== 'Restore') {
-                maxButton.setAttribute('aria-label', 'Restore');
-            }
-        } else {
-            if (maxButton.getAttribute('aria-label') !== 'Maximize') {
-                maxButton.setAttribute('aria-label', 'Maximize');
-            }
-        }
-    } catch (error) {
-        console.error('Error in checkmax:', error);
-    }
-}
-
-// Run checkmax at a regular interval to keep the button state in sync
-setInterval(checkmax, 100);
-
-// Add event listeners for window state changes
-window.addEventListener('resize', checkmax);
-document.addEventListener('mouseup', checkmax);
-
-// Keep updating the Discord RPC message
-var rpcinfo;
-function discordrpc() {
-    try {
-        // Try to get RPC info from the iframe content
-        const frameWindow = document.getElementById("content-frame").contentWindow;
-        if (frameWindow && frameWindow.rpcinfo) {
-            rpcinfo = frameWindow.rpcinfo;
-            // Update the Discord RPC status in the main process
-            if (window.electronAPI && window.electronAPI.updateRpcStatus) {
-                window.electronAPI.updateRpcStatus(rpcinfo);
-            }
-        }
-    } catch (error) {
-        // Silently handle cross-origin errors or other issues
-        // This is expected when the iframe contains external content
-    }
-}
-setInterval(discordrpc, 15000);
-// Custom built code to check if user is online.
-// I have no idea how or why this works.
-async function online() {
-    if (document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/") {
-        page = document.getElementById("content-frame").contentWindow.location.href;
-    } else if (page == undefined) {
-        page = window.initialURL || ''; // Use the stored global URL
-    }
-    if (page.includes("offline.html")) {
-        page = "test";
-    } else {
-
-
-        const frame = document.getElementById('content-frame');
-        try {
-            var pingUrl = await window.electronAPI.getUrl('ping');
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-
-                if (this.readyState == 4 && this.status != 200 && frame.getAttribute('src') != "offline.html?retry=" + page) {
-                    if (page != "test") {
-                        prevpage = page;
-                    }
-                    pagestat = "offline";
-                    page = "offline.html";
-                    frame.setAttribute('src', 'offline.html?retry=' + page);
-
-                } else if (document.getElementById("content-frame").contentWindow.location.href != "chrome-error://chromewebdata/") {
-                    page = document.getElementById("content-frame").contentWindow.location.href;
-                } else {
-                    if ((page == "test") && (pagestat == "offline")) {
-                        frame.setAttribute('src', prevpage);
-                    }
-                    //pagestat = "online";
-                }
-
-            };
-            xhttp.open("GET", pingUrl, true);
-            xhttp.send();
-        } catch (error) {
-            console.error('Error getting ping URL:', error);
-        }
-    }
-}
-// Add window focus and blur listeners to check window state
-window.addEventListener('focus', function () {
-    setTimeout(checkmax, 50);
-});
-
-window.addEventListener('blur', function () {
-    setTimeout(checkmax, 50);
-});
-
-// Prevent scrolling using JavaScript
-window.addEventListener('scroll', () => {
-    window.scrollTo(0, 0); // Keep the window locked at the top
-});
-
-// Disable scroll-related JavaScript methods
-window.onscroll = () => window.scrollTo(0, 0);
-
-document.addEventListener('wheel', (event) => {
-    event.preventDefault(); // Disable mouse wheel scrolling
-}, { passive: false });
-
-document.addEventListener('keydown', (event) => {
-    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(event.key)) {
-        event.preventDefault(); // Disable keyboard scrolling
-    }
-});
-
-
-
-function toggleMusic() {
-    const musicBtn = document.getElementById('music-btn');
-    // Update the global state variable
-    isMusicPlaying = !isMusicPlaying;
-
-    if (isMusicPlaying) {
-        musicBtn.classList.remove('crossed-out');
-        // Unmute music logic here
-        if (window.electronAPI && window.electronAPI.setMusicMuted) {
-            window.electronAPI.setMusicMuted(false);
-        }
-    } else {
-        musicBtn.classList.add('crossed-out');
-        // Mute music logic here
-        if (window.electronAPI && window.electronAPI.setMusicMuted) {
-            window.electronAPI.setMusicMuted(true);
-        }
-    }
-
-    // Save the new state to IndexedDB
-    saveMusicState(isMusicPlaying);
-}
+let userWantsMusicOn = true;
+let iframeAllowsMusicPlayback = true;
+let musicBtn;
+let audioPlayer;
+let chiptunePlayer = null;
+let isChiptunePlayerReady = false;
+let megaRandomList = [];
+let currentTrackIndex = 0;
+let fadeInterval = null;
 
 let db;
 const dbName = 'musicAppState';
@@ -256,7 +33,6 @@ const openDB = () => {
 
         request.onupgradeneeded = (event) => {
             db = event.target.result;
-            // Create the object store if it doesn't exist
             db.createObjectStore(storeName);
         };
     });
@@ -269,11 +45,7 @@ const saveMusicState = (isMusicPlaying) => {
     }
     const transaction = db.transaction([storeName], 'readwrite');
     const store = transaction.objectStore(storeName);
-
-    // Use a specific key, like 'musicState', to store the value
     const request = store.put(isMusicPlaying, 'musicState');
-
-
     request.onerror = (event) => {
         console.error('Error saving music state:', event.target.error);
     };
@@ -288,16 +60,11 @@ const loadMusicState = () => {
         }
         const transaction = db.transaction([storeName], 'readonly');
         const store = transaction.objectStore(storeName);
-
-        // Retrieve the value using the same key
         const request = store.get('musicState');
-
         request.onsuccess = (event) => {
-            // If the key exists, resolve with the value; otherwise, resolve with a default state
             const state = event.target.result !== undefined ? event.target.result : false;
             resolve(state);
         };
-
         request.onerror = (event) => {
             console.error('Error loading music state:', event.target.error);
             reject('Error loading state');
@@ -308,20 +75,429 @@ const loadMusicState = () => {
 const getMusicList = async () => {
     try {
         const baseUrl = await window.electronAPI.getUrl('music');
-
-        // Fetch and parse the modules list
         const modulesResponse = await fetch(`${baseUrl}/modules/index.m3u`);
         const modulesText = await modulesResponse.text();
         const modules = modulesText.split('\n').map(line => line.trim()).filter(line => line.includes('.mod'));
-
-        // Fetch and parse the arcade list
         const arcadeResponse = await fetch(`${baseUrl}/arcade/index.m3u`);
         const arcadeText = await arcadeResponse.text();
         const arcade = arcadeText.split('\n').map(line => line.trim()).filter(line => line.includes('.mp3'));
-
-        return { modules, arcade };
+        return {
+            modules,
+            arcade,
+            baseUrl
+        };
     } catch (error) {
         console.error('Error fetching music lists:', error);
-        return { modules: [], arcade: [] };
+        return {
+            modules: [],
+            arcade: [],
+            baseUrl: ''
+        };
     }
 };
+
+const createMegaRandomList = (modules, arcade, baseUrl) => {
+    const normalizedModules = modules.map(line => {
+        const normalizedLine = line.trim().replaceAll('\\', '/');
+        const parts = normalizedLine.split('/').filter(p => p.length > 0);
+        if (parts.length >= 2) {
+            const author = parts[parts.length - 2];
+            const filename = parts[parts.length - 1];
+            const url = `${baseUrl}/modules/${author}/${filename}`;
+            return url;
+        }
+        console.error('Failed to parse module path:', line);
+        return null;
+    }).filter(url => url !== null);
+    const normalizedArcade = arcade.map(filename => `${baseUrl}/arcade/${filename}`);
+    const combinedList = [...normalizedModules, ...normalizedArcade];
+    return shuffleArray(combinedList);
+};
+
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+async function initChiptunePlayer() {
+    try {
+        const {
+            ChiptuneJsPlayer
+        } = await import('./lib/chiptune3.min.js');
+        const audioContext = new AudioContext();
+        chiptunePlayer = new ChiptuneJsPlayer(audioContext);
+        isChiptunePlayerReady = true;
+    } catch (e) {
+        console.error('Error loading or initializing ChiptuneJsPlayer:', e);
+        isChiptunePlayerReady = false;
+    }
+}
+
+const loadAndPlayModule = async (url) => {
+    if (!isChiptunePlayerReady) {
+        console.error("ChiptuneJsPlayer is not ready. Skipping module playback and attempting next track.");
+        playNextTrack();
+        return;
+    }
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.src = '';
+    }
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch module file');
+        const buffer = await response.arrayBuffer();
+        try {
+            chiptunePlayer.play(buffer);
+        } catch (error) {
+            console.error('Error playing module:', error);
+            // 2 second delay before next track
+            setTimeout(playNextTrack, 2000);
+            return;
+        }
+    } catch (error) {
+        console.error('Error playing module:', error);
+        // 2 second delay before next track
+        setTimeout(playNextTrack, 2000);
+        return;
+    }
+};
+
+const playMp3 = (url) => {
+    if (chiptunePlayer) {
+        chiptunePlayer.stop();
+    }
+    try {
+        audioPlayer.src = url;
+        audioPlayer.play();
+    } catch (error) {
+        console.error('Error playing mp3:', error);
+        // 2 second delay before next track
+        setTimeout(playNextTrack, 2000);
+        return;
+    }
+};
+
+const playNextTrack = () => {
+    if (megaRandomList.length === 0) return;
+    currentTrackIndex = (currentTrackIndex + 1) % megaRandomList.length;
+    const nextUrl = megaRandomList[currentTrackIndex];
+    if (nextUrl.endsWith('.mod')) {
+        loadAndPlayModule(nextUrl);
+    } else {
+        playMp3(nextUrl);
+    }
+};
+
+
+const fadeAndPauseMusic = () => {
+    if (!isMusicPlaying) return;
+    
+    isMusicPlaying = false;
+    
+    const isMp3 = megaRandomList[currentTrackIndex].endsWith('.mp3');
+    const player = isMp3 ? audioPlayer : chiptunePlayer;
+
+    fadeMusicVolume(1, 0, () => {
+        if (isMp3) {
+            player.pause();
+        } else if (isChiptunePlayerReady) {
+            chiptunePlayer.pause();
+        }
+    });
+};
+
+function fadeMusicVolume(startVolume, endVolume, onComplete = null) {
+    if (fadeInterval) clearInterval(fadeInterval);
+    
+    const isMp3 = megaRandomList[currentTrackIndex].endsWith('.mp3');
+    const player = isMp3 ? audioPlayer : chiptunePlayer;
+    
+    let volume = startVolume;
+    const fadeStep = startVolume < endVolume ? 0.05 : -0.05;
+    
+    if (player) {
+        if (isMp3) {
+            player.volume = volume;
+        } else if (isChiptunePlayerReady) {
+            chiptunePlayer.setVol(volume);
+        }
+    }
+    
+    fadeInterval = setInterval(() => {
+        volume += fadeStep;
+        
+        const shouldStop = fadeStep > 0 ? volume >= endVolume : volume <= endVolume;
+        
+        if (shouldStop) {
+            volume = endVolume;
+            clearInterval(fadeInterval);
+            fadeInterval = null;
+            
+            if (onComplete) {
+                onComplete();
+            }
+        }
+        
+        if (player) {
+            if (isMp3) {
+                player.volume = volume;
+            } else if (isChiptunePlayerReady) {
+                chiptunePlayer.setVol(volume);
+            }
+        }
+    }, 50);
+}
+
+const resumeMusic = () => {
+    if (!userWantsMusicOn || !iframeAllowsMusicPlayback) return;
+    if (isMusicPlaying) return;
+
+    isMusicPlaying = true;
+    const currentUrl = megaRandomList[currentTrackIndex];
+    const isMp3 = currentUrl.endsWith('.mp3');
+
+    if (isMp3) {
+        if (audioPlayer.src && audioPlayer.src.includes(currentUrl) && audioPlayer.paused) {
+            audioPlayer.play();
+        } else {
+            playMp3(currentUrl);
+        }
+    } else {
+        if (chiptunePlayer) {
+            if (wasMusicPlayingOnStart) {
+                chiptunePlayer.unpause();
+            } else {
+                wasMusicPlayingOnStart = true;
+                playNextTrack();
+            }
+        } else {
+            playNextTrack();
+        }
+    }
+
+    fadeMusicVolume(0, 1);
+};
+function toggleMusic() {
+    userWantsMusicOn = !userWantsMusicOn;
+    updateMusicButtonState();
+    saveMusicState(userWantsMusicOn);
+
+    tryPlayMusic();
+}
+
+async function initializeApp() {
+    musicBtn = document.getElementById('music-btn');
+    audioPlayer = new Audio();
+    audioPlayer.addEventListener('ended', playNextTrack);
+    
+    await initChiptunePlayer();
+    const { modules, arcade, baseUrl } = await getMusicList();
+    megaRandomList = createMegaRandomList(modules, arcade, baseUrl);
+    
+    window.addEventListener("message", (event) => {
+        if (event.data?.type === "iframe-audio") {
+            if (event.data.state === "playing") {
+                iframeAllowsMusicPlayback = false;
+            } else if (event.data.state === "paused") {
+                iframeAllowsMusicPlayback = true;
+            }
+            tryPlayMusic();
+        }
+    });
+
+    await openDB();
+    isMusicPlaying = await loadMusicState();
+    userWantsMusicOn = isMusicPlaying;
+    wasMusicPlayingOnStart = isMusicPlaying;
+
+    updateMusicButtonState();
+    
+    tryPlayMusic();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const url = urlParams.get('url');
+    if (url == null) {
+        try {
+            const updateUrl = await window.electronAPI.getUrl('update');
+            window.location.href = updateUrl;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    window.initialURL = url;
+    var page;
+    var prevpage;
+    var pagestat;
+    document.getElementById("content-frame").setAttribute('src', url);
+    checkmax();
+    await openDB();
+    isMusicPlaying = await loadMusicState();
+    musicBtn.classList.remove('crossed-out');
+    if (isMusicPlaying) {
+        userDisabledMusic = false;
+        if (megaRandomList.length > 0) {
+            const firstUrl = megaRandomList[currentTrackIndex];
+            if (firstUrl.endsWith('.mod')) {
+                loadAndPlayModule(firstUrl);
+            } else {
+                playMp3(firstUrl);
+            }
+        }
+    } else {
+        musicBtn.classList.add('crossed-out');
+        userDisabledMusic = true;
+    }
+    setTimeout(() => {
+        window.addEventListener('resize', () => {
+            setTimeout(checkmax, 50);
+        });
+        const titleBar = document.querySelector('.title-bar');
+        if (titleBar) {
+            titleBar.addEventListener('mouseup', () => setTimeout(checkmax, 50));
+            titleBar.addEventListener('dblclick', () => setTimeout(checkmax, 50));
+        }
+        if (window.electronAPI && window.electronAPI.onWindowStateChange) {
+            window.electronAPI.onWindowStateChange((isMaximized) => {
+                const maxButton = document.getElementById('max-btn');
+                if (maxButton) {
+                    maxButton.setAttribute('aria-label', isMaximized ? 'Restore' : 'Maximize');
+                }
+            });
+        }
+    }, 100);
+    setInterval(discordrpc, 15000);
+}
+
+
+function tryPlayMusic() {
+    if (userWantsMusicOn && iframeAllowsMusicPlayback && megaRandomList.length > 0) {
+        resumeMusic();
+    } else {
+        fadeAndPauseMusic();
+    }
+}
+
+function updateMusicButtonState() {
+    if (userWantsMusicOn) {
+        musicBtn.classList.remove('crossed-out');
+    } else {
+        musicBtn.classList.add('crossed-out');
+    }
+}
+
+async function toggleMaximize() {
+    try {
+        const maxButton = document.getElementById('max-btn');
+        if (!maxButton) return;
+        const isMaximized = await window.electronAPI.maximizeWindow();
+        if (isMaximized) {
+            maxButton.setAttribute('aria-label', 'Restore');
+        } else {
+            maxButton.setAttribute('aria-label', 'Maximize');
+        }
+    } catch (error) {
+        console.error('Error in toggleMaximize:', error);
+    }
+}
+
+async function checkmax() {
+    try {
+        const maxButton = document.getElementById('max-btn');
+        if (!maxButton) return;
+        const isMaximized = await window.electronAPI.isWindowMaximized();
+        if (isMaximized) {
+            if (maxButton.getAttribute('aria-label') !== 'Restore') {
+                maxButton.setAttribute('aria-label', 'Restore');
+            }
+        } else {
+            if (maxButton.getAttribute('aria-label') !== 'Maximize') {
+                maxButton.setAttribute('aria-label', 'Maximize');
+            }
+        }
+    } catch (error) {
+        console.error('Error in checkmax:', error);
+    }
+}
+setInterval(checkmax, 100);
+window.addEventListener('resize', checkmax);
+document.addEventListener('mouseup', checkmax);
+var rpcinfo;
+
+function discordrpc() {
+    try {
+        const frameWindow = document.getElementById("content-frame").contentWindow;
+        if (frameWindow && frameWindow.rpcinfo) {
+            rpcinfo = frameWindow.rpcinfo;
+            if (window.electronAPI && window.electronAPI.updateRpcStatus) {
+                window.electronAPI.updateRpcStatus(rpcinfo);
+            }
+        }
+    } catch (error) {}
+}
+setInterval(discordrpc, 15000);
+
+async function online() {
+    if (document.getElementById("content-frame").contentWindow.location.href !== "chrome-error://chromewebdata/") {
+        page = document.getElementById("content-frame").contentWindow.location.href;
+    } else if (page === undefined) {
+        page = window.initialURL || '';
+    }
+    if (page.includes("offline.html")) {
+        // Disable music
+        isMusicPlaying = false;
+        fadeAndPauseMusic();
+        wasMusicPlayingOnStart = false;
+        page = "test";
+    } else {
+        const frame = document.getElementById('content-frame');
+        try {
+            var pingUrl = await window.electronAPI.getUrl('ping');
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status !== 200 && frame.getAttribute('src') !== "offline.html?retry=" + page) {
+                    if (page !== "test") {
+                        prevpage = page;
+                    }
+                    pagestat = "offline";
+                    page = "offline.html";
+                    frame.setAttribute('src', 'offline.html?retry=' + page);
+                } else if (document.getElementById("content-frame").contentWindow.location.href !== "chrome-error://chromewebdata/") {
+                    page = document.getElementById("content-frame").contentWindow.location.href;
+                } else {
+                    if ((page === "test") && (pagestat === "offline")) {
+                        frame.setAttribute('src', prevpage);
+                    }
+                }
+            };
+            xhttp.open("GET", pingUrl, true);
+            xhttp.send();
+        } catch (error) {
+            console.error('Error getting ping URL:', error);
+        }
+    }
+}
+window.addEventListener('focus', function() {
+    setTimeout(checkmax, 50);
+});
+window.addEventListener('blur', function() {
+    setTimeout(checkmax, 50);
+});
+window.addEventListener('scroll', () => {
+    window.scrollTo(0, 0);
+});
+window.onscroll = () => window.scrollTo(0, 0);
+document.addEventListener('wheel', (event) => {
+    event.preventDefault();
+}, {
+    passive: false
+});
+document.addEventListener('keydown', (event) => {
+    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(event.key)) {
+        event.preventDefault();
+    }
+});

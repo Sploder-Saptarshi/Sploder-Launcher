@@ -9,7 +9,7 @@ const { systemPreferences } = require("electron");
 function createConfig(isDev = false, buildConfig = {}) {
   return {
     // Base URL for the application
-    baseUrl: "https://www.sploder.net",
+    baseUrl: "http://127.0.0.1:8010",
     
     // Build-time configuration
     build: {
@@ -20,7 +20,8 @@ function createConfig(isDev = false, buildConfig = {}) {
     // Specific endpoints
     endpoints: {
       update: isDev ? "/" : "/update",
-      ping: "/php/ping.php"
+      ping: "/php/ping.php",
+      music: "/music"
     },
     
     // Generate a full URL for an endpoint
