@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, session } = require("electron");
 const path = require("path");
 
 // Import centralized configuration
@@ -292,6 +292,17 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Strip X-Frame-Options and CSP frame-ancestors headers so the remote site can load in our iframe
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const stripped = ['x-frame-options', 'content-security-policy'];
+    const headers = Object.fromEntries(
+      Object.entries(details.responseHeaders).filter(
+        ([key]) => !stripped.includes(key.toLowerCase())
+      )
+    );
+    callback({ responseHeaders: headers });
+  });
+
   createWindow();
 
   app.on("activate", function () {
