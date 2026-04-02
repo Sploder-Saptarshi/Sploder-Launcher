@@ -1,5 +1,6 @@
 const { app, BrowserWindow, shell, ipcMain, session } = require("electron");
 const path = require("path");
+const fs = require("fs");
 
 // Import centralized configuration
 const { createConfig } = require("../config");
@@ -22,6 +23,29 @@ function pathToFileURL(filePath) {
 // Create configuration with proper isDev detection and build config
 const isDev = !app.isPackaged;
 const config = createConfig(isDev, buildConfig);
+
+// Load persisted base URL from userData settings file
+function getSettingsPath() {
+  return path.join(app.getPath('userData'), 'settings.json');
+}
+
+function loadSettings() {
+  try {
+    const data = fs.readFileSync(getSettingsPath(), 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
+
+function saveSettings(settings) {
+  fs.writeFileSync(getSettingsPath(), JSON.stringify(settings, null, 2), 'utf8');
+}
+
+const settings = loadSettings();
+if (settings.baseUrl) {
+  config.baseUrl = settings.baseUrl;
+}
 
 // Set up IPC handlers early to ensure they're registered before window creation
 let win;
@@ -93,6 +117,24 @@ ipcMain.handle('get-config', (event) => {
 
 ipcMain.handle('get-url', (event, endpoint) => {
   return config.getUrl(endpoint);
+});
+
+ipcMain.handle('get-base-url', () => {
+  return config.baseUrl;
+});
+
+ipcMain.handle('set-base-url', (event, url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+  } catch {
+    return false;
+  }
+  config.baseUrl = url;
+  const s = loadSettings();
+  s.baseUrl = url;
+  saveSettings(s);
+  return true;
 });
 
 // If not on windows, disable RPC

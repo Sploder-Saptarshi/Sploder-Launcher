@@ -90,6 +90,41 @@
 #music-btn.crossed-out:active::after {
   background-color: #b6b6b6; /* Darken the cross line on click */
 }
+.settings-btn {
+  background: transparent;
+  padding: 0;
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.settings-btn svg {
+  margin-top: 1px;
+  width: 17px;
+  height: 17px;
+  color: #fff;
+}
+.settings-btn:active svg {
+  color: #b6b6b6;
+}
+#settings-dialog {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  min-width: 320px;
+}
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 9998;
+}
 </style>
 <body>
   
@@ -104,6 +139,9 @@
 <g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.33333,5.33333)"><path d="M25,4c-2.209,0 -4,1.791 -4,4v19.36914l0.01758,0.02148c-0.8148,-0.25595 -1.66353,-0.38764 -2.51758,-0.39062c-4.69442,0 -8.5,3.80558 -8.5,8.5c0,4.69442 3.80558,8.5 8.5,8.5c2.2855,-0.00104 4.47428,-0.92243 6.07245,-2.55624c1.59817,-1.63382 2.47106,-3.84239 2.42169,-6.12735c0.00158,0.06211 0.00586,0.12416 0.00586,0.18359v-31.5zM30,6.39063v8.03906c0.07,0.06 0.12945,0.11969 0.18945,0.17969c3.06,3.01 4.98,4.91148 3,9.27148c-0.82,1.8 -0.23984,3.92953 1.41016,5.01953l1.90039,1.25977c7.12,-10.73 1.79039,-15.98031 -2.09961,-19.82031c-1.44,-1.43 -3.06039,-2.82922 -4.40039,-3.94922zM26.98828,35.1582l0.00195,0.00195c0.0008,0.00884 -0.00068,0.01838 0,0.02734c-0.00063,-0.00977 -0.00129,-0.01953 -0.00195,-0.0293z"></path></g></g>
 </svg>
 </button>
+            <button class="settings-btn" onclick="openSettings()" aria-label="Minimize" style="-webkit-app-region: no-drag">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.68.07-1.08s-.03-.74-.07-1.08l2.32-1.84c.21-.16.27-.45.13-.69l-2.2-3.82c-.13-.23-.43-.31-.67-.23l-2.73 1.1c-.57-.44-1.17-.81-1.84-1.08l-.42-2.9C14.46 2.18 14.24 2 14 2h-4c-.25 0-.46.18-.49.42l-.42 2.9c-.67.27-1.27.64-1.84 1.08l-2.73-1.1c-.24-.09-.54 0-.67.23L1.65 9.35c-.14.23-.08.53.13.69l2.32 1.84c-.04.34-.07.69-.07 1.08s.03.74.07 1.08L1.78 15.88c-.21.16-.27.45-.13.69l2.2 3.82c.13.23.43.31.67.23l2.73-1.1c.57.44 1.17.81 1.84 1.08l.42 2.9c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.42-2.9c.67-.27 1.27-.64 1.84-1.08l2.73 1.1c.24.09.54 0 .67-.23l2.2-3.82c.14-.23.08-.53-.13-.69l-2.32-1.84z"/></svg>
+            </button>
             <button id="min-btn" onclick="window.electronAPI.minimizeWindow()" aria-label="Minimize"></button>
             <button id="max-btn" onclick="toggleMaximize()" aria-label="Maximize"></button>
             <button id="close-btn" onclick="window.electronAPI.closeWindow()" aria-label="Close"></button>
@@ -117,7 +155,44 @@
            
         </div>
       </div>
-      
+
+  <div id="url-toast" style="
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    font-family: Tahoma, sans-serif;
+    font-size: 16px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 9997;
+  "></div>
+
+  <div id="settings-overlay" onclick="closeSettings()"></div>
+  <div id="settings-dialog" class="window">
+    <div class="title-bar">
+      <img class="title-bar-icon" src="images/icon.png">
+      <div class="title-bar-text">Settings</div>
+      <div class="title-bar-controls">
+        <button onclick="closeSettings()" aria-label="Close"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <label for="base-url-input" style="font-family: Tahoma, sans-serif; font-size: 12px;">Launch URL</label>
+      <input id="base-url-input" type="text" style="width: 100%; box-sizing: border-box; font-size: 12px;" placeholder="https://sploder.online">
+      <div style="display: flex; gap: 6px; justify-content: flex-end; margin-top: 4px;">
+        <button onclick="saveSettings()">OK</button>
+        <button onclick="closeSettings()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 <script>
   // If URL contains music=true, show music button
@@ -125,5 +200,51 @@
   if (urlParams.get('music') === 'true') {
       document.getElementById('music-btn').style.display = 'block';
   }
+
+  async function showUrlToast() {
+    const url = await window.electronAPI.getBaseUrl();
+    const toast = document.getElementById('url-toast');
+    toast.textContent = 'Launching: ' + url;
+    toast.style.opacity = '1';
+    setTimeout(() => { toast.style.opacity = '0'; }, 10000);
+  }
+
+  window.addEventListener('load', showUrlToast);
+
+  async function openSettings() {
+    const current = await window.electronAPI.getBaseUrl();
+    document.getElementById('base-url-input').value = current || '';
+    document.getElementById('settings-overlay').style.display = 'block';
+    document.getElementById('settings-dialog').style.display = 'block';
+    document.getElementById('base-url-input').focus();
+  }
+
+  function closeSettings() {
+    document.getElementById('settings-overlay').style.display = 'none';
+    document.getElementById('settings-dialog').style.display = 'none';
+  }
+
+  async function saveSettings() {
+    const input = document.getElementById('base-url-input');
+    const url = input.value.trim();
+    if (!url) return;
+    const ok = await window.electronAPI.setBaseUrl(url);
+    if (!ok) {
+      input.style.outline = '2px solid red';
+      return;
+    }
+    input.style.outline = '';
+    closeSettings();
+    showUrlToast();
+    // Reload the content frame with the new URL
+    const frame = document.getElementById('content-frame');
+    const newUrl = await window.electronAPI.getUrl('update');
+    frame.src = newUrl;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSettings();
+    if (e.key === 'Enter' && document.getElementById('settings-dialog').style.display === 'block') saveSettings();
+  });
 </script>
 </html>

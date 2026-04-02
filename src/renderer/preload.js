@@ -15,5 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Configuration API
   getConfig: () => ipcRenderer.invoke('get-config'),
-  getUrl: (endpoint) => ipcRenderer.invoke('get-url', endpoint)
+  getUrl: (endpoint) => ipcRenderer.invoke('get-url', endpoint),
+  getBaseUrl: () => ipcRenderer.invoke('get-base-url'),
+  setBaseUrl: (url) => ipcRenderer.invoke('set-base-url', url)
 });
